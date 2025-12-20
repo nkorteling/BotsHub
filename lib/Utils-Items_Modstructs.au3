@@ -19,6 +19,7 @@
 
 #include <Array.au3>
 #include 'Utils.au3'
+#include "JSON.au3"
 
 ;~ Determines whether the provided item has expensive mods
 Func ContainsValuableUpgrades($item)
@@ -771,7 +772,7 @@ Global Const $Struct_All_Runes_Superior_Vigor					= 'C202EA27'
 ; Runes are present at index 1 of their armor salvageable item
 Global $Valuable_Runes_And_Insignias_Structs_Array[] = DefaultCreateValuableRunesAndInsigniasArray()
 Global $ValuableModsByOSWeaponType = DefaultCreateValuableModsByOSWeaponTypeMap()
-Global $ValuableModsByWeaponType = DefaultCreateValuableModsByWeaponTypeMap()
+Global $ValuableModsByWeaponType = DefaultCreateValuableModsByOSWeaponTypeMap()
 Global $PerfectModsByWeaponType = CreatePerfectModsByOSWeaponTypeMap()
 
 
@@ -824,22 +825,22 @@ EndFunc
 ;~ Creates a map to use to find whether an OS weapon has a valuable mod - this doesn't mean the weapon itself is valuable
 Func DefaultCreateValuableModsByOSWeaponTypeMap()
 	; Nothing worth it on OS shields and focii, and there are no OS scythes and spears
+	Local $jsonPath = @ScriptDir & "..\..\conf\loot\upgrade_components.json"
+	Local $jsonText = FileRead($jsonPath)
+	If @error Or $jsonText = "" Then Return SetError(1, 0, 0)
+	Local $data = _JSON_Parse($jsonText)
+	If @error Or Not IsMap($data) Then Return SetError(2, 0, 0)
+
 	Local $Shield_Mods_Array		= []
 	Local $Offhand_Mods_Array		= []
 	Local $Scythe_Mods_Array		= []
 	Local $Spear_Mods_Array			= []
-	Local $Wand_Mods_Array			= [$STRUCT_MOD_OF_THE_NECROMANCER]
-	Local $Dagger_Mods_Array		= [$STRUCT_MOD_OF_THE_NECROMANCER, $STRUCT_MOD_OF_THE_RANGER]
-	Local $Staff_Mods_Array			= [$STRUCT_MOD_OF_THE_NECROMANCER, _
-		$STRUCT_MOD_OF_CHARRSLAYING, $STRUCT_MOD_OF_TROLLSLAYING, $STRUCT_MOD_OF_GIANT_SLAYING, $STRUCT_MOD_OF_DWARF_SLAYING, $STRUCT_MOD_OF_TENGU_SLAYING] ; Personal collection
-	Local $Bow_Mods_Array			= [$STRUCT_MOD_OF_THE_NECROMANCER, $STRUCT_MOD_OF_THE_RANGER, _
-		$STRUCT_MOD_OF_CHARRSLAYING, $STRUCT_MOD_OF_TROLLSLAYING, $STRUCT_MOD_OF_GIANT_SLAYING, $STRUCT_MOD_OF_DWARF_SLAYING, $STRUCT_MOD_OF_TENGU_SLAYING] ; Personal collection
-	Local $Axe_Mods_Array			= [$STRUCT_MOD_OF_THE_NECROMANCER, $STRUCT_MOD_OF_THE_RANGER, _
-		$STRUCT_MOD_OF_CHARRSLAYING, $STRUCT_MOD_OF_TROLLSLAYING, $STRUCT_MOD_OF_GIANT_SLAYING, $STRUCT_MOD_OF_DWARF_SLAYING, $STRUCT_MOD_OF_TENGU_SLAYING] ; Personal collection
-	Local $Hammer_Mods_Array		= [$STRUCT_MOD_OF_THE_NECROMANCER, $STRUCT_MOD_OF_THE_RANGER, _
-		$STRUCT_MOD_OF_CHARRSLAYING, $STRUCT_MOD_OF_TROLLSLAYING, $STRUCT_MOD_OF_GIANT_SLAYING, $STRUCT_MOD_OF_DWARF_SLAYING, $STRUCT_MOD_OF_TENGU_SLAYING] ; Personal collection
-	Local $Sword_Mods_Array			= [$STRUCT_MOD_OF_THE_NECROMANCER, $STRUCT_MOD_OF_THE_RANGER, _
-		$STRUCT_MOD_OF_CHARRSLAYING, $STRUCT_MOD_OF_TROLLSLAYING, $STRUCT_MOD_OF_GIANT_SLAYING, $STRUCT_MOD_OF_DWARF_SLAYING, $STRUCT_MOD_OF_TENGU_SLAYING] ; Personal collection
+	Local $Wand_Mods_Array			= []
+	Local $Dagger_Mods_Array		= []
+	Local $Staff_Mods_Array			= []
+	Local $Bow_Mods_Array			= []
+	Local $Hammer_Mods_Array		= []
+	Local $Sword_Mods_Array			= []
 	; Redefining types here remove dependency on GWA2_ID - and we only execute this function once
 	Local $ID_Type_Axe				= 2
 	Local $ID_Type_Bow				= 5
@@ -852,8 +853,1372 @@ Func DefaultCreateValuableModsByOSWeaponTypeMap()
 	Local $ID_Type_Dagger			= 32
 	Local $ID_Type_Scythe			= 35
 	Local $ID_Type_Spear			= 36
-	Local Const $All_Weapons_Array			= [$ID_Type_Shield, $ID_Type_Offhand, $ID_Type_Wand, $ID_Type_Staff, $ID_Type_Bow, $ID_Type_Axe, $ID_Type_Hammer, $ID_Type_Sword, $ID_Type_Dagger, $ID_Type_Scythe, $ID_Type_Spear]
-	Local Const $All_Weapons_Mods_Array		= [$Shield_Mods_Array, $Offhand_Mods_Array, $Wand_Mods_Array, $Staff_Mods_Array, $Bow_Mods_Array, $Axe_Mods_Array, $Hammer_Mods_Array, _
+
+	; All weapon types inscriptions
+	if $data["Inscriptions"]["All"]["Measure for measure (Highly salvageable)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_INSCRIPTION_MEASURE_FOR_MEASURE)
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_INSCRIPTION_MEASURE_FOR_MEASURE)
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_MEASURE_FOR_MEASURE)
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_INSCRIPTION_MEASURE_FOR_MEASURE)
+		_WinAPI_ArrayAdd($Wand_Mods_Array, $STRUCT_INSCRIPTION_MEASURE_FOR_MEASURE)
+		_WinAPI_ArrayAdd($Shield_Mods_Array, $STRUCT_INSCRIPTION_MEASURE_FOR_MEASURE)
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_INSCRIPTION_MEASURE_FOR_MEASURE)
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_INSCRIPTION_MEASURE_FOR_MEASURE)
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_INSCRIPTION_MEASURE_FOR_MEASURE)
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_INSCRIPTION_MEASURE_FOR_MEASURE)
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_INSCRIPTION_MEASURE_FOR_MEASURE)
+	EndIf
+	If $data["Inscriptions"]["All"]["Show me the money (improved sale value)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_INSCRIPTION_SHOW_ME_THE_MONEY)
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_INSCRIPTION_SHOW_ME_THE_MONEY)
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_SHOW_ME_THE_MONEY)
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_INSCRIPTION_SHOW_ME_THE_MONEY)
+		_WinAPI_ArrayAdd($Wand_Mods_Array, $STRUCT_INSCRIPTION_SHOW_ME_THE_MONEY)
+		_WinAPI_ArrayAdd($Shield_Mods_Array, $STRUCT_INSCRIPTION_SHOW_ME_THE_MONEY)
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_INSCRIPTION_SHOW_ME_THE_MONEY)
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_INSCRIPTION_SHOW_ME_THE_MONEY)
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_INSCRIPTION_SHOW_ME_THE_MONEY)
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_INSCRIPTION_SHOW_ME_THE_MONEY)
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_INSCRIPTION_SHOW_ME_THE_MONEY)
+	EndIf
+	
+	; Offhand specific inscriptions
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Forget me not (Halves skill recharge of spells of item's attribute)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_FORGET_ME_NOT)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Serenity now (Halves skill recharge of spells)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_SERENITY_NOW)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Hail to the king (Armor +5 while Health is above 50%)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_HAIL_TO_THE_KING)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Faith is my shield (Armor +5 while Enchanted)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_FAITH_IS_MY_SHIELD)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Might makes right (Armor +5 while attacking)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_MIGHT_MAKES_RIGHT)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Knowing is half the battle (Armor +5 while casting)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_KNOWING_IS_HALF_THE_BATTLE)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Man for all seasons (Armor +5 vs Elemental damage)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_MAN_FOR_ALL_SEASONS)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Survival of the fittest (Armor +5 vs Physical damage)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_SURVIVAL_OF_THE_FITTEST)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Ignorance is bliss (Armor +5 Energy -5)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_IGNORANCE_IS_BLISS_1)
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_IGNORANCE_IS_BLISS_2)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Life is pain (Armor +5 Health -20)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_LIFE_IS_PAIN)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Down but not out (Armor +10 while Health is below 50%)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_DOWN_BUT_NOT_OUT)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Be just and fear not (Armor +10 while hexed)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_BE_JUST_AND_FEAR_NOT)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Live for today (Energy +15 Energy regeneration -1)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_LIVE_FOR_TODAY)
+	EndIf
+
+	
+	; Shield and focus specific mods
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Master of my domain (Item's attribute +1)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_MASTER_OF_MY_DOMAIN)
+		_WinAPI_ArrayAdd($Shield_Mods_Array, $STRUCT_INSCRIPTION_MASTER_OF_MY_DOMAIN)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Not the face (Armor +10 vs Blunt damage)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_NOT_THE_FACE)
+		_WinAPI_ArrayAdd($Shield_Mods_Array, $STRUCT_INSCRIPTION_NOT_THE_FACE)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Leaf on the wind (Armor +10 vs Cold damage)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_LEAF_ON_THE_WIND)
+		_WinAPI_ArrayAdd($Shield_Mods_Array, $STRUCT_INSCRIPTION_LEAF_ON_THE_WIND)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Like a rolling stone (Armor +10 vs Earth damage)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_LIKE_A_ROLLING_STONE)
+		_WinAPI_ArrayAdd($Shield_Mods_Array, $STRUCT_INSCRIPTION_LIKE_A_ROLLING_STONE)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Sleep now in the fire (Armor +10 vs Fire damage)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_SLEEP_NOW_IN_THE_FIRE)
+		_WinAPI_ArrayAdd($Shield_Mods_Array, $STRUCT_INSCRIPTION_SLEEP_NOW_IN_THE_FIRE)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Riders on the storm (Armor +10 vs Lightning damage)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_RIDERS_ON_THE_STORM)
+		_WinAPI_ArrayAdd($Shield_Mods_Array, $STRUCT_INSCRIPTION_RIDERS_ON_THE_STORM)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Through thick and thin (Armor +10 vs Piercing damage)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_THROUGH_THICK_AND_THIN)
+		_WinAPI_ArrayAdd($Shield_Mods_Array, $STRUCT_INSCRIPTION_THROUGH_THICK_AND_THIN)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["The riddle of steel (Armor +10 vs Slashing damage)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_THE_RIDDLE_OF_STEEL)
+		_WinAPI_ArrayAdd($Shield_Mods_Array, $STRUCT_INSCRIPTION_THE_RIDDLE_OF_STEEL)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Sheltered by faith (Received physical damage -2 while Enchanted)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_SHELTERED_BY_FAITH)
+		_WinAPI_ArrayAdd($Shield_Mods_Array, $STRUCT_INSCRIPTION_SHELTERED_BY_FAITH)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Run for your life (Received physical damage -2 while in a Stance)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_RUN_FOR_YOUR_LIFE)
+		_WinAPI_ArrayAdd($Shield_Mods_Array, $STRUCT_INSCRIPTION_RUN_FOR_YOUR_LIFE)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Nothing to fear (Received physical damage -3 while Hexed)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_NOTHING_TO_FEAR)
+		_WinAPI_ArrayAdd($Shield_Mods_Array, $STRUCT_INSCRIPTION_NOTHING_TO_FEAR)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Luck of the draw (Received physical damage -5 - Chance 20%)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_LUCK_OF_THE_DRAW)
+		_WinAPI_ArrayAdd($Shield_Mods_Array, $STRUCT_INSCRIPTION_LUCK_OF_THE_DRAW)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Fear cuts deeper (Reduces Bleeding duration on you by 20%)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_FEAR_CUTS_DEEPER)
+		_WinAPI_ArrayAdd($Shield_Mods_Array, $STRUCT_INSCRIPTION_FEAR_CUTS_DEEPER)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["I can see clearly now (Reduces Blind duration on you by 20%)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_I_CAN_SEE_CLEARY_NOW)
+		_WinAPI_ArrayAdd($Shield_Mods_Array, $STRUCT_INSCRIPTION_I_CAN_SEE_CLEARY_NOW)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Swift as the wind (Reduces Crippled duration on you by 20%)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_SWIFT_AS_THE_WIND)
+		_WinAPI_ArrayAdd($Shield_Mods_Array, $STRUCT_INSCRIPTION_SWIFT_AS_THE_WIND)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Soundness of mind (Reduces Dazed duration on you by 20%)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_SOUNDNESS_OF_MIND)
+		_WinAPI_ArrayAdd($Shield_Mods_Array, $STRUCT_INSCRIPTION_SOUNDNESS_OF_MIND)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Strength of body (Reduces Deep Wound duration on you by 20%)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_STRENGTH_OF_BODY)
+		_WinAPI_ArrayAdd($Shield_Mods_Array, $STRUCT_INSCRIPTION_STRENGTH_OF_BODY)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Cast out the unclean (Reduces Disease duration on you by 20%)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_CAST_OUT_THE_UNCLEAN)
+		_WinAPI_ArrayAdd($Shield_Mods_Array, $STRUCT_INSCRIPTION_CAST_OUT_THE_UNCLEAN)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Pure of heart (Reduces Poison duration on you by 20%)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_PURE_OF_HEART)
+		_WinAPI_ArrayAdd($Shield_Mods_Array, $STRUCT_INSCRIPTION_PURE_OF_HEART)
+	EndIf
+	If $data["Inscriptions"]["Offhand"]["Focus"]["Only the strong survive (Reduces Weakness duration on you by 20%)"] Then
+		_WinAPI_ArrayAdd($Offhand_Mods_Array, $STRUCT_INSCRIPTION_ONLY_THE_STRONG_SURVIVE)
+		_WinAPI_ArrayAdd($Shield_Mods_Array, $STRUCT_INSCRIPTION_ONLY_THE_STRONG_SURVIVE)
+	EndIf
+
+	; Weapon specific mods
+	If $data["Inscriptions"]["Weapon"]["All"]["Strength and honor (Damage +15% while Health is above 50%)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_INSCRIPTION_STRENGTH_AND_HONOR)
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_INSCRIPTION_STRENGTH_AND_HONOR)
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_INSCRIPTION_STRENGTH_AND_HONOR)
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_INSCRIPTION_STRENGTH_AND_HONOR)
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_INSCRIPTION_STRENGTH_AND_HONOR)
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_INSCRIPTION_STRENGTH_AND_HONOR)
+		_WinAPI_ArrayAdd($Wand_Mods_Array, $STRUCT_INSCRIPTION_STRENGTH_AND_HONOR)
+		_WinApi_ArrayAdd($Scythe_Mods_Array, $STRUCT_INSCRIPTION_STRENGTH_AND_HONOR)
+		_WinApi_ArrayAdd($Spear_Mods_Array, $STRUCT_INSCRIPTION_STRENGTH_AND_HONOR)
+	EndIf
+	If $data["Inscriptions"]["Weapon"]["All"]["Guided by fate (Damage +15% while Enchanted)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_INSCRIPTION_GUIDED_BY_FATE)
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_INSCRIPTION_GUIDED_BY_FATE)
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_INSCRIPTION_GUIDED_BY_FATE)
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_INSCRIPTION_GUIDED_BY_FATE)
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_INSCRIPTION_GUIDED_BY_FATE)
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_INSCRIPTION_GUIDED_BY_FATE)
+		_WinAPI_ArrayAdd($Wand_Mods_Array, $STRUCT_INSCRIPTION_GUIDED_BY_FATE)
+		_WinApi_ArrayAdd($Scythe_Mods_Array, $STRUCT_INSCRIPTION_GUIDED_BY_FATE)
+		_WinApi_ArrayAdd($Spear_Mods_Array, $STRUCT_INSCRIPTION_GUIDED_BY_FATE)
+	EndIf
+	If $data["Inscriptions"]["Weapon"]["All"]["Dance with death (Damage +15% while in a Stance)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_INSCRIPTION_DANCE_WITH_DEATH)
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_INSCRIPTION_DANCE_WITH_DEATH)
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_INSCRIPTION_DANCE_WITH_DEATH)
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_INSCRIPTION_DANCE_WITH_DEATH)
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_INSCRIPTION_DANCE_WITH_DEATH)
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_INSCRIPTION_DANCE_WITH_DEATH)
+		_WinAPI_ArrayAdd($Wand_Mods_Array, $STRUCT_INSCRIPTION_DANCE_WITH_DEATH)
+		_WinApi_ArrayAdd($Scythe_Mods_Array, $STRUCT_INSCRIPTION_DANCE_WITH_DEATH)
+		_WinApi_ArrayAdd($Spear_Mods_Array, $STRUCT_INSCRIPTION_DANCE_WITH_DEATH)
+	EndIf
+	If $data["Inscriptions"]["Weapon"]["All"]["Too much information (Damage +15% vs Hexed foes)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_INSCRIPTION_TOO_MUCH_INFORMATION)
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_INSCRIPTION_TOO_MUCH_INFORMATION)
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_INSCRIPTION_TOO_MUCH_INFORMATION)
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_INSCRIPTION_TOO_MUCH_INFORMATION)
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_INSCRIPTION_TOO_MUCH_INFORMATION)
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_INSCRIPTION_TOO_MUCH_INFORMATION)
+		_WinAPI_ArrayAdd($Wand_Mods_Array, $STRUCT_INSCRIPTION_TOO_MUCH_INFORMATION)
+		_WinApi_ArrayAdd($Scythe_Mods_Array, $STRUCT_INSCRIPTION_TOO_MUCH_INFORMATION)
+		_WinApi_ArrayAdd($Spear_Mods_Array, $STRUCT_INSCRIPTION_TOO_MUCH_INFORMATION)
+	EndIf
+	If $data["Inscriptions"]["Weapon"]["All"]["To the pain (Damage +15% Armor -10 while attacking)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_INSCRIPTION_TO_THE_PAIN)
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_INSCRIPTION_TO_THE_PAIN)
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_INSCRIPTION_TO_THE_PAIN)
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_INSCRIPTION_TO_THE_PAIN)
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_INSCRIPTION_TO_THE_PAIN)
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_INSCRIPTION_TO_THE_PAIN)
+		_WinAPI_ArrayAdd($Wand_Mods_Array, $STRUCT_INSCRIPTION_TO_THE_PAIN)
+		_WinApi_ArrayAdd($Scythe_Mods_Array, $STRUCT_INSCRIPTION_TO_THE_PAIN)
+		_WinApi_ArrayAdd($Spear_Mods_Array, $STRUCT_INSCRIPTION_TO_THE_PAIN)
+	EndIf
+	If $data["Inscriptions"]["Weapon"]["All"]["Brawn over brain (Damage +15% Energy -5)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_INSCRIPTION_BRAWN_OVER_BRAIN)
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_INSCRIPTION_BRAWN_OVER_BRAIN)
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_INSCRIPTION_BRAWN_OVER_BRAIN)
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_INSCRIPTION_BRAWN_OVER_BRAIN)
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_INSCRIPTION_BRAWN_OVER_BRAIN)
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_INSCRIPTION_BRAWN_OVER_BRAIN)
+		_WinAPI_ArrayAdd($Wand_Mods_Array, $STRUCT_INSCRIPTION_BRAWN_OVER_BRAIN)
+		_WinApi_ArrayAdd($Scythe_Mods_Array, $STRUCT_INSCRIPTION_BRAWN_OVER_BRAIN)
+		_WinApi_ArrayAdd($Spear_Mods_Array, $STRUCT_INSCRIPTION_BRAWN_OVER_BRAIN)
+	EndIf
+	If $data["Inscriptions"]["Weapon"]["All"]["Vengeance is mine (Damage +20% while Health is below 50%)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_INSCRIPTION_VENGEANCE_IS_MINE)
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_INSCRIPTION_VENGEANCE_IS_MINE)
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_INSCRIPTION_VENGEANCE_IS_MINE)
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_INSCRIPTION_VENGEANCE_IS_MINE)
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_INSCRIPTION_VENGEANCE_IS_MINE)
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_INSCRIPTION_VENGEANCE_IS_MINE)
+		_WinAPI_ArrayAdd($Wand_Mods_Array, $STRUCT_INSCRIPTION_VENGEANCE_IS_MINE)
+		_WinApi_ArrayAdd($Scythe_Mods_Array, $STRUCT_INSCRIPTION_VENGEANCE_IS_MINE)
+		_WinApi_ArrayAdd($Spear_Mods_Array, $STRUCT_INSCRIPTION_VENGEANCE_IS_MINE)
+	EndIf
+	If $data["Inscriptions"]["Weapon"]["All"]["Dont fear the reaper (Damage +20% while Hexed)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_INSCRIPTION_DONT_FEAR_THE_REAPER)
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_INSCRIPTION_DONT_FEAR_THE_REAPER)
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_INSCRIPTION_DONT_FEAR_THE_REAPER)
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_INSCRIPTION_DONT_FEAR_THE_REAPER)
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_INSCRIPTION_DONT_FEAR_THE_REAPER)
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_INSCRIPTION_DONT_FEAR_THE_REAPER)
+		_WinAPI_ArrayAdd($Wand_Mods_Array, $STRUCT_INSCRIPTION_DONT_FEAR_THE_REAPER)
+		_WinApi_ArrayAdd($Scythe_Mods_Array, $STRUCT_INSCRIPTION_DONT_FEAR_THE_REAPER)
+		_WinApi_ArrayAdd($Spear_Mods_Array, $STRUCT_INSCRIPTION_DONT_FEAR_THE_REAPER)
+	EndIf
+	If $data["Inscriptions"]["Weapon"]["All"]["Dont think twice (Halves casting time of spells)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_INSCRIPTION_DONT_THINK_TWICE)
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_INSCRIPTION_DONT_THINK_TWICE)
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_INSCRIPTION_DONT_THINK_TWICE)
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_INSCRIPTION_DONT_THINK_TWICE)
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_INSCRIPTION_DONT_THINK_TWICE)
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_INSCRIPTION_DONT_THINK_TWICE)
+		_WinAPI_ArrayAdd($Wand_Mods_Array, $STRUCT_INSCRIPTION_DONT_THINK_TWICE)
+		_WinApi_ArrayAdd($Scythe_Mods_Array, $STRUCT_INSCRIPTION_DONT_THINK_TWICE)
+		_WinApi_ArrayAdd($Spear_Mods_Array, $STRUCT_INSCRIPTION_DONT_THINK_TWICE)
+	EndIf
+
+	;Martial Weapons only
+	If $data["Inscriptions"]["Weapon"]["Martial"]["I have the power (Energy +5)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_INSCRIPTION_I_HAVE_THE_POWER)
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_INSCRIPTION_I_HAVE_THE_POWER)
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_INSCRIPTION_I_HAVE_THE_POWER)
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_INSCRIPTION_I_HAVE_THE_POWER)
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_INSCRIPTION_I_HAVE_THE_POWER)
+		_WinApi_ArrayAdd($Scythe_Mods_Array, $STRUCT_INSCRIPTION_I_HAVE_THE_POWER)
+		_WinApi_ArrayAdd($Spear_Mods_Array, $STRUCT_INSCRIPTION_I_HAVE_THE_POWER)
+	EndIf
+	If $data["Inscriptions"]["Weapon"]["Martial"]["Let the memory live again (Halves skill recharge of spells)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_INSCRIPTION_LET_THE_MEMORY_LIVE_AGAIN)
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_INSCRIPTION_LET_THE_MEMORY_LIVE_AGAIN)
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_INSCRIPTION_LET_THE_MEMORY_LIVE_AGAIN)
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_INSCRIPTION_LET_THE_MEMORY_LIVE_AGAIN)
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_INSCRIPTION_LET_THE_MEMORY_LIVE_AGAIN)
+		_WinApi_ArrayAdd($Scythe_Mods_Array, $STRUCT_INSCRIPTION_LET_THE_MEMORY_LIVE_AGAIN)
+		_WinApi_ArrayAdd($Spear_Mods_Array, $STRUCT_INSCRIPTION_LET_THE_MEMORY_LIVE_AGAIN)
+	EndIf
+	
+	;Spellcasting Weapons only
+	If $data["Inscriptions"]["Weapon"]["Spellcasting"]["Hale and hearty (Energy +5 while Health is above 50%)"] Then
+		_WinAPI_ArrayAdd($Wand_Mods_Array, $STRUCT_INSCRIPTION_HALE_AND_HEARTY)
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_INSCRIPTION_HALE_AND_HEARTY)
+	EndIf
+	If $data["Inscriptions"]["Weapon"]["Spellcasting"]["Have faith (Energy +5 while Enchanted)"] Then
+		_WinAPI_ArrayAdd($Wand_Mods_Array, $STRUCT_INSCRIPTION_HAVE_FAITH)
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_INSCRIPTION_HAVE_FAITH)
+	EndIf
+	If $data["Inscriptions"]["Weapon"]["Spellcasting"]["Dont call it a come back (Energy +7 while Health is below 50%)"] Then
+		_WinAPI_ArrayAdd($Wand_Mods_Array, $STRUCT_INSCRIPTION_DONT_CALL_IT_A_COME_BACK)
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_INSCRIPTION_DONT_CALL_IT_A_COME_BACK)
+	EndIf
+	If $data["Inscriptions"]["Weapon"]["Spellcasting"]["I am sorrow (Energy +7 while Hexed)"] Then
+		_WinAPI_ArrayAdd($Wand_Mods_Array, $STRUCT_INSCRIPTION_I_AM_SORROW)
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_INSCRIPTION_I_AM_SORROW)
+	EndIf
+	If $data["Inscriptions"]["Weapon"]["Spellcasting"]["Seize the day (Energy +15 Energy regeneration -1)"] Then
+		_WinAPI_ArrayAdd($Wand_Mods_Array, $STRUCT_INSCRIPTION_SEIZE_THE_DAY_1)
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_INSCRIPTION_SEIZE_THE_DAY_1)
+		_WinAPI_ArrayAdd($Wand_Mods_Array, $STRUCT_INSCRIPTION_SEIZE_THE_DAY_2)
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_INSCRIPTION_SEIZE_THE_DAY_2)
+	EndIf
+	If $data["Inscriptions"]["Weapon"]["Spellcasting"]["Aptitude not attitude (Halves casting time of spells of item's attribute)"] Then
+		_WinAPI_ArrayAdd($Wand_Mods_Array, $STRUCT_INSCRIPTION_APTITUDE_NOT_ATTITUDE)
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_INSCRIPTION_APTITUDE_NOT_ATTITUDE)
+	EndIf
+
+	;Axe Mods
+		;Axe Prefixes
+	If $data["Modifiers"]["Axe"]["Prefix - Haft"]["Ebon (Earth damage)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_EBON_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Prefix - Haft"]["Fiery (Fire damage)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_FIERY_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Prefix - Haft"]["Icy (Cold damage)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_ICY_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Prefix - Haft"]["Shocking (Lightning damage)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_SHOCKING_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Prefix - Haft"]["Barbed (Lengthens Bleeding duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_BARBED_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Prefix - Haft"]["Cruel (Lengthens Deep Wound duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_CRUEL_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Prefix - Haft"]["Crippling (Lengthens Crippled duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_CRIPPLING_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Prefix - Haft"]["Heavy (Lengthens Weakness duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_HEAVY_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Prefix - Haft"]["Poisonous (Lengthens Poison duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_POISONOUS_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Prefix - Haft"]["Furious (Double Adrenaline on hit - Chance 10%)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_FURIOUS_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Prefix - Haft"]["Sundering (Armor penetration +20% - Chance 20%)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_SUNDERING_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Prefix - Haft"]["Vampiric (Life Draining 3 Health regeneration -1)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_VAMPIRIC_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Prefix - Haft"]["Zealous (Energy gain on hit: 1 Energy regeneration: -1)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_ZEALOUS_PREFIX)
+	EndIf
+	
+		; Axe Suffixes
+	If $data["Modifiers"]["Axe"]["Suffix - Grip"]["of Fortitude (Health +30)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_30_HEALTH)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Suffix - Grip"]["Of Defense (Armor +5)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_5_ARMOR)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Suffix - Grip"]["Of Shelter (Armor +7 vs physical damage)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_OF_SHELTER)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Suffix - Grip"]["Of Warding (Armor +7 vs elemental damage)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_OF_WARDING)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Suffix - Grip"]["Of Enchanting (Enchantments last 20% longer)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_OF_ENCHANTING)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Suffix - Grip"]["Of The Warrior"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_OF_THE_WARRIOR)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Suffix - Grip"]["Of The Ranger"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_OF_THE_RANGER)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Suffix - Grip"]["Of the Necromancer"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_OF_THE_NECROMANCER)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Suffix - Grip"]["Of The Mesmer"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_OF_THE_MESMER)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Suffix - Grip"]["Of The Elementalist"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_OF_THE_NECROMANCER)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Suffix - Grip"]["Of The Monk"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_OF_THE_MONK)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Suffix - Grip"]["Of The Ritualist"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_OF_THE_RITUALIST)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Suffix - Grip"]["Of The Assassin"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_OF_THE_ASSASSIN)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Suffix - Grip"]["Of The Paragon"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_OF_THE_PARAGON)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Suffix - Grip"]["Of The Dervish"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_OF_THE_DERVISH)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Suffix - Grip"]["Of Deathbane"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_OF_DEATHBANE)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Suffix - Grip"]["Of Charrslaying"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_OF_CHARRSLAYING)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Suffix - Grip"]["Of Trollslaying"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_OF_TROLLSLAYING)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Suffix - Grip"]["Of Pruning"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_OF_PRUNING)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Suffix - Grip"]["Of Skeleton Slaying"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_OF_SKELETON_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Suffix - Grip"]["Of Giant Slaying"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_OF_GIANT_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Suffix - Grip"]["Of Dwarf Slaying"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_OF_DWARF_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Suffix - Grip"]["Of Tengu Slaying"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_OF_TENGU_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Suffix - Grip"]["Of Demon Slaying"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_OF_DEMON_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Suffix - Grip"]["Of Ogre Slaying"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_OF_OGRE_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Suffix - Grip"]["Of Dragon Slaying"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_OF_DRAGON_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Axe"]["Suffix - Grip"]["Of Mastery (Item's attribute +1 - 20% chance while using skills)"] Then
+		_WinAPI_ArrayAdd($Axe_Mods_Array, $STRUCT_MOD_OF_AXE_MASTERY)
+	EndIf
+	
+	;Bow Mods
+		;Bow Prefixes
+	If $data["Modifiers"]["Bow"]["Prefix - String"]["Ebon (Earth damage)"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_EBON_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Prefix - String"]["Fiery (Fire damage)"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_FIERY_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Prefix - String"]["Icy (Cold damage)"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_ICY_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Prefix - String"]["Shocking (Lightning damage)"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_SHOCKING_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Prefix - String"]["Barbed (Lengthens Bleeding duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_BARBED_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Prefix - String"]["Cruel (Lengthens Deep Wound duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_CRUEL_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Prefix - String"]["Crippling (Lengthens Crippled duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_CRIPPLING_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Prefix - String"]["Heavy (Lengthens Weakness duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_HEAVY_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Prefix - String"]["Poisonous (Lengthens Poison duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_POISONOUS_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Prefix - String"]["Furious (Double Adrenaline on hit - Chance 10%)"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_FURIOUS_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Prefix - String"]["Sundering (Armor penetration +20% - Chance 20%)"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_SUNDERING_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Prefix - String"]["Vampiric (Life Draining 3 Health regeneration -1)"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_VAMPIRIC_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Prefix - String"]["Zealous (Energy gain on hit: 1 Energy regeneration: -1)"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_ZEALOUS_PREFIX)
+	EndIf
+	
+		; Bow Suffixes
+	If $data["Modifiers"]["Bow"]["Suffix - Grip"]["of Fortitude (Health +30)"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_30_HEALTH)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Suffix - Grip"]["Of Defense (Armor +5)"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_5_ARMOR)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Suffix - Grip"]["Of Shelter (Armor +7 vs physical damage)"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_OF_SHELTER)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Suffix - Grip"]["Of Warding (Armor +7 vs elemental damage)"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_OF_WARDING)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Suffix - Grip"]["Of Enchanting (Enchantments last 20% longer)"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_OF_ENCHANTING)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Suffix - Grip"]["Of The Warrior"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_OF_THE_WARRIOR)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Suffix - Grip"]["Of The Ranger"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_OF_THE_RANGER)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Suffix - Grip"]["Of the Necromancer"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_OF_THE_NECROMANCER)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Suffix - Grip"]["Of The Mesmer"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_OF_THE_MESMER)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Suffix - Grip"]["Of The Elementalist"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_OF_THE_NECROMANCER)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Suffix - Grip"]["Of The Monk"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_OF_THE_MONK)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Suffix - Grip"]["Of The Ritualist"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_OF_THE_RITUALIST)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Suffix - Grip"]["Of The Assassin"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_OF_THE_ASSASSIN)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Suffix - Grip"]["Of The Paragon"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_OF_THE_PARAGON)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Suffix - Grip"]["Of The Dervish"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_OF_THE_DERVISH)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Suffix - Grip"]["Of Deathbane"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_OF_DEATHBANE)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Suffix - Grip"]["Of Charrslaying"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_OF_CHARRSLAYING)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Suffix - Grip"]["Of Trollslaying"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_OF_TROLLSLAYING)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Suffix - Grip"]["Of Pruning"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_OF_PRUNING)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Suffix - Grip"]["Of Skeleton Slaying"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_OF_SKELETON_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Suffix - Grip"]["Of Giant Slaying"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_OF_GIANT_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Suffix - Grip"]["Of Dwarf Slaying"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_OF_DWARF_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Suffix - Grip"]["Of Tengu Slaying"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_OF_TENGU_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Suffix - Grip"]["Of Demon Slaying"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_OF_DEMON_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Suffix - Grip"]["Of Ogre Slaying"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_OF_OGRE_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Suffix - Grip"]["Of Dragon Slaying"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_OF_DRAGON_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Bow"]["Suffix - Grip"]["Of Mastery (Item's attribute +1 - 20% chance while using skills)"] Then
+		_WinAPI_ArrayAdd($Bow_Mods_Array, $STRUCT_MOD_OF_BOW_MASTERY)
+	EndIf
+
+	
+	;Dagger Mods
+		;Dagger Prefixes
+	If $data["Modifiers"]["Dagger"]["Prefix - Tang"]["Ebon (Earth damage)"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_EBON_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Prefix - Tang"]["Fiery (Fire damage)"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_FIERY_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Prefix - Tang"]["Icy (Cold damage)"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_ICY_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Prefix - Tang"]["Shocking (Lightning damage)"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_SHOCKING_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Prefix - Tang"]["Barbed (Lengthens Bleeding duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_BARBED_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Prefix - Tang"]["Cruel (Lengthens Deep Wound duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_CRUEL_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Prefix - Tang"]["Crippling (Lengthens Crippled duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_CRIPPLING_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Prefix - Tang"]["Heavy (Lengthens Weakness duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_HEAVY_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Prefix - Tang"]["Poisonous (Lengthens Poison duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_POISONOUS_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Prefix - Tang"]["Furious (Double Adrenaline on hit - Chance 10%)"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_FURIOUS_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Prefix - Tang"]["Sundering (Armor penetration +20% - Chance 20%)"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_SUNDERING_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Prefix - Tang"]["Vampiric (Life Draining 3 Health regeneration -1)"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_VAMPIRIC_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Prefix - Tang"]["Zealous (Energy gain on hit: 1 Energy regeneration: -1)"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_ZEALOUS_PREFIX)
+	EndIf
+	
+		; Dagger Suffixes
+	If $data["Modifiers"]["Dagger"]["Suffix - Handle"]["of Fortitude (Health +30)"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_30_HEALTH)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Suffix - Handle"]["Of Defense (Armor +5)"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_5_ARMOR)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Suffix - Handle"]["Of Shelter (Armor +7 vs physical damage)"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_OF_SHELTER)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Suffix - Handle"]["Of Warding (Armor +7 vs elemental damage)"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_OF_WARDING)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Suffix - Handle"]["Of Enchanting (Enchantments last 20% longer)"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_OF_ENCHANTING)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Suffix - Handle"]["Of The Warrior"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_OF_THE_WARRIOR)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Suffix - Handle"]["Of The Ranger"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_OF_THE_RANGER)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Suffix - Handle"]["Of the Necromancer"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_OF_THE_NECROMANCER)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Suffix - Handle"]["Of The Mesmer"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_OF_THE_MESMER)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Suffix - Handle"]["Of The Elementalist"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_OF_THE_NECROMANCER)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Suffix - Handle"]["Of The Monk"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_OF_THE_MONK)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Suffix - Handle"]["Of The Ritualist"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_OF_THE_RITUALIST)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Suffix - Handle"]["Of The Assassin"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_OF_THE_ASSASSIN)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Suffix - Handle"]["Of The Paragon"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_OF_THE_PARAGON)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Suffix - Handle"]["Of The Dervish"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_OF_THE_DERVISH)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Suffix - Handle"]["Of Deathbane"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_OF_DEATHBANE)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Suffix - Handle"]["Of Charrslaying"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_OF_CHARRSLAYING)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Suffix - Handle"]["Of Trollslaying"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_OF_TROLLSLAYING)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Suffix - Handle"]["Of Pruning"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_OF_PRUNING)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Suffix - Handle"]["Of Skeleton Slaying"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_OF_SKELETON_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Suffix - Handle"]["Of Giant Slaying"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_OF_GIANT_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Suffix - Handle"]["Of Dwarf Slaying"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_OF_DWARF_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Suffix - Handle"]["Of Tengu Slaying"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_OF_TENGU_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Suffix - Handle"]["Of Demon Slaying"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_OF_DEMON_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Suffix - Handle"]["Of Ogre Slaying"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_OF_OGRE_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Suffix - Handle"]["Of Dragon Slaying"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_OF_DRAGON_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Dagger"]["Suffix - Handle"]["Of Mastery (Item's attribute +1 - 20% chance while using skills)"] Then
+		_WinAPI_ArrayAdd($Dagger_Mods_Array, $STRUCT_MOD_OF_DAGGER_MASTERY)
+	EndIf
+	
+	
+	;Hammer Mods
+		;Hammer Prefixes
+	If $data["Modifiers"]["Hammer"]["Prefix - Haft"]["Ebon (Earth damage)"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_EBON_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Prefix - Haft"]["Fiery (Fire damage)"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_FIERY_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Prefix - Haft"]["Icy (Cold damage)"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_ICY_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Prefix - Haft"]["Shocking (Lightning damage)"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_SHOCKING_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Prefix - Haft"]["Barbed (Lengthens Bleeding duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_BARBED_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Prefix - Haft"]["Cruel (Lengthens Deep Wound duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_CRUEL_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Prefix - Haft"]["Crippling (Lengthens Crippled duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_CRIPPLING_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Prefix - Haft"]["Heavy (Lengthens Weakness duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_HEAVY_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Prefix - Haft"]["Poisonous (Lengthens Poison duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_POISONOUS_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Prefix - Haft"]["Furious (Double Adrenaline on hit - Chance 10%)"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_FURIOUS_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Prefix - Haft"]["Sundering (Armor penetration +20% - Chance 20%)"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_SUNDERING_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Prefix - Haft"]["Vampiric (Life Draining 3 Health regeneration -1)"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_VAMPIRIC_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Prefix - Haft"]["Zealous (Energy gain on hit: 1 Energy regeneration: -1)"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_ZEALOUS_PREFIX)
+	EndIf
+	
+		; Hammer Suffixes
+	If $data["Modifiers"]["Hammer"]["Suffix - Grip"]["of Fortitude (Health +30)"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_30_HEALTH)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Suffix - Grip"]["Of Defense (Armor +5)"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_5_ARMOR)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Suffix - Grip"]["Of Shelter (Armor +7 vs physical damage)"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_OF_SHELTER)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Suffix - Grip"]["Of Warding (Armor +7 vs elemental damage)"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_OF_WARDING)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Suffix - Grip"]["Of Enchanting (Enchantments last 20% longer)"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_OF_ENCHANTING)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Suffix - Grip"]["Of The Warrior"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_OF_THE_WARRIOR)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Suffix - Grip"]["Of The Ranger"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_OF_THE_RANGER)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Suffix - Grip"]["Of the Necromancer"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_OF_THE_NECROMANCER)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Suffix - Grip"]["Of The Mesmer"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_OF_THE_MESMER)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Suffix - Grip"]["Of The Elementalist"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_OF_THE_NECROMANCER)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Suffix - Grip"]["Of The Monk"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_OF_THE_MONK)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Suffix - Grip"]["Of The Ritualist"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_OF_THE_RITUALIST)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Suffix - Grip"]["Of The Assassin"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_OF_THE_ASSASSIN)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Suffix - Grip"]["Of The Paragon"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_OF_THE_PARAGON)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Suffix - Grip"]["Of The Dervish"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_OF_THE_DERVISH)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Suffix - Grip"]["Of Deathbane"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_OF_DEATHBANE)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Suffix - Grip"]["Of Charrslaying"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_OF_CHARRSLAYING)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Suffix - Grip"]["Of Trollslaying"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_OF_TROLLSLAYING)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Suffix - Grip"]["Of Pruning"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_OF_PRUNING)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Suffix - Grip"]["Of Skeleton Slaying"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_OF_SKELETON_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Suffix - Grip"]["Of Giant Slaying"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_OF_GIANT_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Suffix - Grip"]["Of Dwarf Slaying"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_OF_DWARF_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Suffix - Grip"]["Of Tengu Slaying"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_OF_TENGU_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Suffix - Grip"]["Of Demon Slaying"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_OF_DEMON_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Suffix - Grip"]["Of Ogre Slaying"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_OF_OGRE_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Suffix - Grip"]["Of Dragon Slaying"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_OF_DRAGON_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Hammer"]["Suffix - Grip"]["Of Mastery (Item's attribute +1 - 20% chance while using skills)"] Then
+		_WinAPI_ArrayAdd($Hammer_Mods_Array, $STRUCT_MOD_OF_HAMMER_MASTERY)
+	EndIf
+	
+	;Scythe Mods
+		;Scythe Prefixes
+	If $data["Modifiers"]["Scythe"]["Prefix - Snathe"]["Ebon (Earth damage)"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_EBON_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Prefix - Snathe"]["Fiery (Fire damage)"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_FIERY_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Prefix - Snathe"]["Icy (Cold damage)"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_ICY_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Prefix - Snathe"]["Shocking (Lightning damage)"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_SHOCKING_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Prefix - Snathe"]["Barbed (Lengthens Bleeding duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_BARBED_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Prefix - Snathe"]["Cruel (Lengthens Deep Wound duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_CRUEL_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Prefix - Snathe"]["Crippling (Lengthens Crippled duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_CRIPPLING_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Prefix - Snathe"]["Heavy (Lengthens Weakness duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_HEAVY_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Prefix - Snathe"]["Poisonous (Lengthens Poison duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_POISONOUS_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Prefix - Snathe"]["Furious (Double Adrenaline on hit - Chance 10%)"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_FURIOUS_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Prefix - Snathe"]["Sundering (Armor penetration +20% - Chance 20%)"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_SUNDERING_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Prefix - Snathe"]["Vampiric (Life Draining 3 Health regeneration -1)"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_VAMPIRIC_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Prefix - Snathe"]["Zealous (Energy gain on hit: 1 Energy regeneration: -1)"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_ZEALOUS_PREFIX)
+	EndIf
+	
+		; Scythe Suffixes
+	If $data["Modifiers"]["Scythe"]["Suffix - Grip"]["of Fortitude (Health +30)"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_30_HEALTH)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Suffix - Grip"]["Of Defense (Armor +5)"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_5_ARMOR)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Suffix - Grip"]["Of Shelter (Armor +7 vs physical damage)"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_OF_SHELTER)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Suffix - Grip"]["Of Warding (Armor +7 vs elemental damage)"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_OF_WARDING)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Suffix - Grip"]["Of Enchanting (Enchantments last 20% longer)"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_OF_ENCHANTING)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Suffix - Grip"]["Of The Warrior"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_OF_THE_WARRIOR)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Suffix - Grip"]["Of The Ranger"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_OF_THE_RANGER)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Suffix - Grip"]["Of the Necromancer"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_OF_THE_NECROMANCER)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Suffix - Grip"]["Of The Mesmer"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_OF_THE_MESMER)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Suffix - Grip"]["Of The Elementalist"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_OF_THE_NECROMANCER)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Suffix - Grip"]["Of The Monk"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_OF_THE_MONK)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Suffix - Grip"]["Of The Ritualist"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_OF_THE_RITUALIST)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Suffix - Grip"]["Of The Assassin"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_OF_THE_ASSASSIN)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Suffix - Grip"]["Of The Paragon"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_OF_THE_PARAGON)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Suffix - Grip"]["Of The Dervish"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_OF_THE_DERVISH)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Suffix - Grip"]["Of Deathbane"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_OF_DEATHBANE)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Suffix - Grip"]["Of Charrslaying"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_OF_CHARRSLAYING)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Suffix - Grip"]["Of Trollslaying"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_OF_TROLLSLAYING)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Suffix - Grip"]["Of Pruning"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_OF_PRUNING)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Suffix - Grip"]["Of Skeleton Slaying"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_OF_SKELETON_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Suffix - Grip"]["Of Giant Slaying"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_OF_GIANT_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Suffix - Grip"]["Of Dwarf Slaying"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_OF_DWARF_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Suffix - Grip"]["Of Tengu Slaying"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_OF_TENGU_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Suffix - Grip"]["Of Demon Slaying"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_OF_DEMON_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Suffix - Grip"]["Of Ogre Slaying"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_OF_OGRE_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Suffix - Grip"]["Of Dragon Slaying"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_OF_DRAGON_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Scythe"]["Suffix - Grip"]["Of Mastery (Item's attribute +1 - 20% chance while using skills)"] Then
+		_WinAPI_ArrayAdd($Scythe_Mods_Array, $STRUCT_MOD_OF_SCYTHE_MASTERY)
+	EndIf
+	
+	
+	;Spear Mods
+		;Spear Prefixes
+	If $data["Modifiers"]["Spear"]["Prefix - Head"]["Ebon (Earth damage)"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_EBON_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Prefix - Head"]["Fiery (Fire damage)"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_FIERY_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Prefix - Head"]["Icy (Cold damage)"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_ICY_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Prefix - Head"]["Shocking (Lightning damage)"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_SHOCKING_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Prefix - Head"]["Barbed (Lengthens Bleeding duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_BARBED_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Prefix - Head"]["Cruel (Lengthens Deep Wound duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_CRUEL_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Prefix - Head"]["Crippling (Lengthens Crippled duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_CRIPPLING_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Prefix - Head"]["Heavy (Lengthens Weakness duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_HEAVY_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Prefix - Head"]["Poisonous (Lengthens Poison duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_POISONOUS_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Prefix - Head"]["Furious (Double Adrenaline on hit - Chance 10%)"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_FURIOUS_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Prefix - Head"]["Sundering (Armor penetration +20% - Chance 20%)"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_SUNDERING_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Prefix - Head"]["Vampiric (Life Draining 3 Health regeneration -1)"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_VAMPIRIC_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Prefix - Head"]["Zealous (Energy gain on hit: 1 Energy regeneration: -1)"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_ZEALOUS_PREFIX)
+	EndIf
+	
+		; Spear Suffixes
+	If $data["Modifiers"]["Spear"]["Suffix - Grip"]["of Fortitude (Health +30)"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_30_HEALTH)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Suffix - Grip"]["Of Defense (Armor +5)"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_5_ARMOR)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Suffix - Grip"]["Of Shelter (Armor +7 vs physical damage)"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_OF_SHELTER)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Suffix - Grip"]["Of Warding (Armor +7 vs elemental damage)"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_OF_WARDING)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Suffix - Grip"]["Of Enchanting (Enchantments last 20% longer)"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_OF_ENCHANTING)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Suffix - Grip"]["Of The Warrior"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_OF_THE_WARRIOR)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Suffix - Grip"]["Of The Ranger"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_OF_THE_RANGER)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Suffix - Grip"]["Of the Necromancer"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_OF_THE_NECROMANCER)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Suffix - Grip"]["Of The Mesmer"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_OF_THE_MESMER)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Suffix - Grip"]["Of The Elementalist"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_OF_THE_NECROMANCER)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Suffix - Grip"]["Of The Monk"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_OF_THE_MONK)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Suffix - Grip"]["Of The Ritualist"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_OF_THE_RITUALIST)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Suffix - Grip"]["Of The Assassin"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_OF_THE_ASSASSIN)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Suffix - Grip"]["Of The Paragon"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_OF_THE_PARAGON)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Suffix - Grip"]["Of The Dervish"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_OF_THE_DERVISH)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Suffix - Grip"]["Of Deathbane"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_OF_DEATHBANE)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Suffix - Grip"]["Of Charrslaying"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_OF_CHARRSLAYING)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Suffix - Grip"]["Of Trollslaying"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_OF_TROLLSLAYING)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Suffix - Grip"]["Of Pruning"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_OF_PRUNING)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Suffix - Grip"]["Of Skeleton Slaying"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_OF_SKELETON_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Suffix - Grip"]["Of Giant Slaying"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_OF_GIANT_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Suffix - Grip"]["Of Dwarf Slaying"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_OF_DWARF_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Suffix - Grip"]["Of Tengu Slaying"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_OF_TENGU_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Suffix - Grip"]["Of Demon Slaying"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_OF_DEMON_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Suffix - Grip"]["Of Ogre Slaying"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_OF_OGRE_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Suffix - Grip"]["Of Dragon Slaying"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_OF_DRAGON_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Spear"]["Suffix - Grip"]["Of Mastery (Item's attribute +1 - 20% chance while using skills)"] Then
+		_WinAPI_ArrayAdd($Spear_Mods_Array, $STRUCT_MOD_OF_SPEAR_MASTERY)
+	EndIf
+	
+	
+	;Sword Mods
+		;Sword Prefixes
+	If $data["Modifiers"]["Sword"]["Prefix - Hilt"]["Ebon (Earth damage)"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_EBON_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Prefix - Hilt"]["Fiery (Fire damage)"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_FIERY_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Prefix - Hilt"]["Icy (Cold damage)"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_ICY_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Prefix - Hilt"]["Shocking (Lightning damage)"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_SHOCKING_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Prefix - Hilt"]["Barbed (Lengthens Bleeding duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_BARBED_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Prefix - Hilt"]["Cruel (Lengthens Deep Wound duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_CRUEL_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Prefix - Hilt"]["Crippling (Lengthens Crippled duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_CRIPPLING_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Prefix - Hilt"]["Heavy (Lengthens Weakness duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_HEAVY_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Prefix - Hilt"]["Poisonous (Lengthens Poison duration on foes by 33%)"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_POISONOUS_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Prefix - Hilt"]["Furious (Double Adrenaline on hit - Chance 10%)"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_FURIOUS_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Prefix - Hilt"]["Sundering (Armor penetration +20% - Chance 20%)"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_SUNDERING_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Prefix - Hilt"]["Vampiric (Life Draining 3 Health regeneration -1)"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_VAMPIRIC_PREFIX)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Prefix - Hilt"]["Zealous (Energy gain on hit: 1 Energy regeneration: -1)"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_ZEALOUS_PREFIX)
+	EndIf
+	
+		; Sword Suffixes
+	If $data["Modifiers"]["Sword"]["Suffix - Pommel"]["of Fortitude (Health +30)"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_30_HEALTH)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Suffix - Pommel"]["Of Defense (Armor +5)"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_5_ARMOR)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Suffix - Pommel"]["Of Shelter (Armor +7 vs physical damage)"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_OF_SHELTER)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Suffix - Pommel"]["Of Warding (Armor +7 vs elemental damage)"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_OF_WARDING)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Suffix - Pommel"]["Of Enchanting (Enchantments last 20% longer)"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_OF_ENCHANTING)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Suffix - Pommel"]["Of The Warrior"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_OF_THE_WARRIOR)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Suffix - Pommel"]["Of The Ranger"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_OF_THE_RANGER)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Suffix - Pommel"]["Of the Necromancer"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_OF_THE_NECROMANCER)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Suffix - Pommel"]["Of The Mesmer"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_OF_THE_MESMER)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Suffix - Pommel"]["Of The Elementalist"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_OF_THE_NECROMANCER)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Suffix - Pommel"]["Of The Monk"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_OF_THE_MONK)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Suffix - Pommel"]["Of The Ritualist"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_OF_THE_RITUALIST)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Suffix - Pommel"]["Of The Assassin"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_OF_THE_ASSASSIN)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Suffix - Pommel"]["Of The Paragon"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_OF_THE_PARAGON)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Suffix - Pommel"]["Of The Dervish"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_OF_THE_DERVISH)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Suffix - Pommel"]["Of Deathbane"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_OF_DEATHBANE)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Suffix - Pommel"]["Of Charrslaying"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_OF_CHARRSLAYING)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Suffix - Pommel"]["Of Trollslaying"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_OF_TROLLSLAYING)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Suffix - Pommel"]["Of Pruning"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_OF_PRUNING)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Suffix - Pommel"]["Of Skeleton Slaying"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_OF_SKELETON_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Suffix - Pommel"]["Of Giant Slaying"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_OF_GIANT_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Suffix - Pommel"]["Of Dwarf Slaying"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_OF_DWARF_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Suffix - Pommel"]["Of Tengu Slaying"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_OF_TENGU_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Suffix - Pommel"]["Of Demon Slaying"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_OF_DEMON_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Suffix - Pommel"]["Of Ogre Slaying"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_OF_OGRE_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Suffix - Pommel"]["Of Dragon Slaying"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_OF_DRAGON_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Sword"]["Suffix - Pommel"]["Of Mastery (Item's attribute +1 - 20% chance while using skills)"] Then
+		_WinAPI_ArrayAdd($Sword_Mods_Array, $STRUCT_MOD_OF_SWORD_MASTERY)
+	EndIf
+
+	
+	;Wand Mods
+		; Wand Suffixes
+	If $data["Modifiers"]["Wand"]["Suffix - Grip"]["Of Memory (Halves skill recharge of item's attribute spells - Chance 20%)"] Then
+		_WinAPI_ArrayAdd($Wand_Mods_Array, $STRUCT_MOD_HSR_20)
+	EndIf
+	If $data["Modifiers"]["Wand"]["Suffix - Grip"]["Of Quickening (Halves skill recharge of spells - Chance 10%)"] Then
+		_WinAPI_ArrayAdd($Wand_Mods_Array, $STRUCT_MOD_HSR_10)
+	EndIf
+	If $data["Modifiers"]["Wand"]["Suffix - Grip"]["Of The Warrior"] Then
+		_WinAPI_ArrayAdd($Wand_Mods_Array, $STRUCT_MOD_OF_THE_WARRIOR)
+	EndIf
+	If $data["Modifiers"]["Wand"]["Suffix - Grip"]["Of The Ranger"] Then
+		_WinAPI_ArrayAdd($Wand_Mods_Array, $STRUCT_MOD_OF_THE_RANGER)
+	EndIf
+	If $data["Modifiers"]["Wand"]["Suffix - Grip"]["Of the Necromancer"] Then
+		_WinAPI_ArrayAdd($Wand_Mods_Array, $STRUCT_MOD_OF_THE_NECROMANCER)
+	EndIf
+	If $data["Modifiers"]["Wand"]["Suffix - Grip"]["Of The Mesmer"] Then
+		_WinAPI_ArrayAdd($Wand_Mods_Array, $STRUCT_MOD_OF_THE_MESMER)
+	EndIf
+	If $data["Modifiers"]["Wand"]["Suffix - Grip"]["Of The Elementalist"] Then
+		_WinAPI_ArrayAdd($Wand_Mods_Array, $STRUCT_MOD_OF_THE_NECROMANCER)
+	EndIf
+	If $data["Modifiers"]["Wand"]["Suffix - Grip"]["Of The Monk"] Then
+		_WinAPI_ArrayAdd($Wand_Mods_Array, $STRUCT_MOD_OF_THE_MONK)
+	EndIf
+	If $data["Modifiers"]["Wand"]["Suffix - Grip"]["Of The Ritualist"] Then
+		_WinAPI_ArrayAdd($Wand_Mods_Array, $STRUCT_MOD_OF_THE_RITUALIST)
+	EndIf
+	If $data["Modifiers"]["Wand"]["Suffix - Grip"]["Of The Assassin"] Then
+		_WinAPI_ArrayAdd($Wand_Mods_Array, $STRUCT_MOD_OF_THE_ASSASSIN)
+	EndIf
+	If $data["Modifiers"]["Wand"]["Suffix - Grip"]["Of The Paragon"] Then
+		_WinAPI_ArrayAdd($Wand_Mods_Array, $STRUCT_MOD_OF_THE_PARAGON)
+	EndIf
+	If $data["Modifiers"]["Wand"]["Suffix - Grip"]["Of The Dervish"] Then
+		_WinAPI_ArrayAdd($Wand_Mods_Array, $STRUCT_MOD_OF_THE_DERVISH)
+	EndIf
+	
+	;Staff Mods
+		;Staff Prefixes
+	If $data["Modifiers"]["Staff"]["Prefix - Head"]["Hale (Health +30)"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_30_HEALTH)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Prefix - Head"]["Adept (Halves casting time of spells of item's attribute - Chance 20%)"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_HCT_20)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Prefix - Head"]["Swift (Halves casting time of spells - Chance 10%)"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_HCT_10)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Prefix - Head"]["Insightful (Energy +5)"] Then
+		;~ _WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Prefix - Head"]["Defensive (Armor +5)"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_5_ARMOR)
+	EndIf
+	
+	
+		; Staff Suffixes
+	If $data["Modifiers"]["Staff"]["Suffix - Wrapping"]["of Fortitude (Health +30)"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_30_HEALTH)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Suffix - Wrapping"]["Of Defense (Armor +5)"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_5_ARMOR)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Suffix - Wrapping"]["Of Shelter (Armor +7 vs physical damage)"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_OF_SHELTER)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Suffix - Wrapping"]["Of Warding (Armor +7 vs elemental damage)"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_OF_WARDING)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Suffix - Wrapping"]["Of Enchanting (Enchantments last 20% longer)"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_OF_ENCHANTING)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Suffix - Wrapping"]["Of The Warrior"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_OF_THE_WARRIOR)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Suffix - Wrapping"]["Of The Ranger"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_OF_THE_RANGER)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Suffix - Wrapping"]["Of the Necromancer"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_OF_THE_NECROMANCER)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Suffix - Wrapping"]["Of The Mesmer"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_OF_THE_MESMER)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Suffix - Wrapping"]["Of The Elementalist"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_OF_THE_NECROMANCER)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Suffix - Wrapping"]["Of The Monk"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_OF_THE_MONK)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Suffix - Wrapping"]["Of The Ritualist"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_OF_THE_RITUALIST)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Suffix - Wrapping"]["Of The Assassin"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_OF_THE_ASSASSIN)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Suffix - Wrapping"]["Of The Paragon"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_OF_THE_PARAGON)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Suffix - Wrapping"]["Of The Dervish"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_OF_THE_DERVISH)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Suffix - Wrapping"]["Of Deathbane"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_OF_DEATHBANE)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Suffix - Wrapping"]["Of Charrslaying"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_OF_CHARRSLAYING)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Suffix - Wrapping"]["Of Trollslaying"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_OF_TROLLSLAYING)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Suffix - Wrapping"]["Of Pruning"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_OF_PRUNING)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Suffix - Wrapping"]["Of Skeleton Slaying"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_OF_SKELETON_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Suffix - Wrapping"]["Of Giant Slaying"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_OF_GIANT_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Suffix - Wrapping"]["Of Dwarf Slaying"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_OF_DWARF_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Suffix - Wrapping"]["Of Tengu Slaying"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_OF_TENGU_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Suffix - Wrapping"]["Of Demon Slaying"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_OF_DEMON_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Suffix - Wrapping"]["Of Ogre Slaying"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_OF_OGRE_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Suffix - Wrapping"]["Of Dragon Slaying"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_OF_DRAGON_SLAYING)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Suffix - Wrapping"]["Of Mastery (Item's attribute +1 - 20% chance while using skills)"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_OF_SWORD_MASTERY)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Suffix - Wrapping"]["Of Devotion (Health +45 while Enchanted)"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_OF_DEVOTION)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Suffix - Wrapping"]["Of Endurance (Health +45 while in a Stance)"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_OF_ENDURANCE)
+	EndIf
+	If $data["Modifiers"]["Staff"]["Suffix - Wrapping"]["Of Valor (Health +60 while Hexed)"] Then
+		_WinAPI_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_OF_VALOR)
+	EndIf
+
+	; Shields
+	If $data["Modifiers"]["Shield"]["Suffix - Handle"]["of Fortitude (Health +30)"] Then
+		_WinAPI_ArrayAdd($Shield_Mods_Array, $STRUCT_MOD_30_HEALTH)
+	EndIf
+	If $data["Modifiers"]["Shield"]["Suffix - Handle"]["Of Devotion (Health +45 while Enchanted)"] Then
+		_WinAPI_ArrayAdd($Shield_Mods_Array, $STRUCT_MOD_OF_DEVOTION)
+	EndIf
+	If $data["Modifiers"]["Shield"]["Suffix - Handle"]["Of Endurance (Health +45 while in a Stance)"] Then
+		_WinAPI_ArrayAdd($Shield_Mods_Array, $STRUCT_MOD_OF_ENDURANCE)
+	EndIf
+	If $data["Modifiers"]["Shield"]["Suffix - Handle"]["Of Valor (Health +60 while Hexed)"] Then
+		_WinAPI_ArrayAdd($Shield_Mods_Array, $STRUCT_MOD_OF_VALOR)
+	EndIf
+
+	;Focus
+	If $data["Modifiers"]["Focus"]["Suffix - Core"]["of Fortitude (Health +30)"] Then
+		_WinAPI_ArrayAdd($Focus_Mods_Array, $STRUCT_MOD_30_HEALTH)
+	EndIf
+	If $data["Modifiers"]["Focus"]["Suffix - Core"]["Of Devotion (Health +45 while Enchanted)"] Then
+		_WinAPI_ArrayAdd($Focus_Mods_Array, $STRUCT_MOD_OF_DEVOTION)
+	EndIf
+	If $data["Modifiers"]["Focus"]["Suffix - Core"]["Of Endurance (Health +45 while in a Stance)"] Then
+		_WinAPI_ArrayAdd($Focus_Mods_Array, $STRUCT_MOD_OF_ENDURANCE)
+	EndIf
+	If $data["Modifiers"]["Focus"]["Suffix - Core"]["Of Valor (Health +60 while Hexed)"] Then
+		_WinAPI_ArrayAdd($Focus_Mods_Array, $STRUCT_MOD_OF_VALOR)
+	EndIf
+	If $data["Modifiers"]["Focus"]["Suffix - Core"]["Of Swiftness (Halves casting time of spells - Chance 10%)"] Then
+		_WinAPI_ArrayAdd($Focus_Mods_Array, $STRUCT_MOD_HCT_10)
+	EndIf
+	
+
+		Local Const $All_Weapons_Mods_Array		= [$Shield_Mods_Array, $Offhand_Mods_Array, $Wand_Mods_Array, $Staff_Mods_Array, $Bow_Mods_Array, $Axe_Mods_Array, $Hammer_Mods_Array, _
 													$Sword_Mods_Array, $Dagger_Mods_Array, $Scythe_Mods_Array, $Spear_Mods_Array]
 	Local $ValuableModsByOSWeaponType[]		= MapFromArrays($All_Weapons_Array, $All_Weapons_Mods_Array)
 	Return $ValuableModsByOSWeaponType
