@@ -325,7 +325,7 @@ Func SkreeFarmLoop()
 		
 		; Move to distant items and pick them up
 		Local $lootTimer = TimerInit()
-		While TimerDiff($lootTimer) < 30000  ; 30 second timeout
+		While TimerDiff($lootTimer) < 10000  ; 10 second timeout, Increase during event
 			PickUpItems()
 			
 			Local $item = GetNearestItemToAgent(GetMyAgent())

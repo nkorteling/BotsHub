@@ -894,13 +894,88 @@ Func DefaultShouldStoreItem($item)
 EndFunc
 
 
+
+
+
+
+;~ Helper: Returns True if the item has any valuable mod, inscription, or rune (from lootComponentList)
+Func HasAnyValuableUpgrade($item, ByRef $lootComponentList)
+	; Check mods (mod1, mod2)
+	Local $mod1 = GetMod1Name($item)
+	Local $mod2 = GetMod2Name($item)
+	If $mod1 <> '' And IsMap($lootComponentList['Weapon upgrades']['Mods']) Then
+		If $lootComponentList['Weapon upgrades']['Mods'][$mod1] = True Then
+			Info('[SAFETY] Not selling item with valuable mod: ' & $mod1)
+			Return True
+		EndIf
+	EndIf
+	If $mod2 <> '' And IsMap($lootComponentList['Weapon upgrades']['Mods']) Then
+		If $lootComponentList['Weapon upgrades']['Mods'][$mod2] = True Then
+			Info('[SAFETY] Not selling item with valuable mod: ' & $mod2)
+			Return True
+		EndIf
+	EndIf
+	; Check inscription
+	Local $inscription = GetInscriptionName($item)
+	If $inscription <> '' And IsMap($lootComponentList['Weapon upgrades']['Inscriptions']) Then
+		If $lootComponentList['Weapon upgrades']['Inscriptions'][$inscription] = True Then
+			Info('[SAFETY] Not selling item with valuable inscription: ' & $inscription)
+			Return True
+		EndIf
+	EndIf
+	; Check runes/insignias for armor
+	If isArmorSalvageItem($item) Then
+		Local $modName = GetModName($item)
+		If $modName = '' Then Return False
+		Local $classes[11] = ['All', 'Assassin', 'Dervish', 'Elementalist', 'Mesmer', 'Monk', 'Necromancer', 'Paragon', 'Ranger', 'Ritualist', 'Warrior']
+		For $i = 0 To UBound($classes) - 1
+			Local $class = $classes[$i]
+			If IsMap($lootComponentList['Armor upgrades'][$class]['Insignias']) Then
+				If $lootComponentList['Armor upgrades'][$class]['Insignias'][$modName] = True Then
+					Info('[SAFETY] Not selling item with valuable insignia: ' & $modName)
+					Return True
+				EndIf
+			EndIf
+			If IsMap($lootComponentList['Armor upgrades'][$class]['Runes']) Then
+				If $lootComponentList['Armor upgrades'][$class]['Runes'][$modName] = True Then
+					Info('[SAFETY] Not selling item with valuable rune: ' & $modName)
+					Return True
+				EndIf
+			EndIf
+		Next
+	EndIf
+	Return False
+EndFunc
+
 ;~ Return True if the item should be sold to the merchant
+
+
 Func DefaultShouldSellItem($item)
 	Local $itemID = DllStructGetData($item, 'ModelID')
 	Local $rarity = GetRarity($item)
 
 	; Prevent selling if item is in the custom loot component list
 	If IsInLootComponentList($item) Then Return False
+
+	; General safety: Never sell a weapon with any valuable mod, inscription, or rune
+	Local Static $lootComponentList = 0
+	If $lootComponentList = 0 Then
+		Local $jsonText = FileRead(@ScriptDir & '\..\..\conf\loot\upgrade_components.json')
+		If Not @error And $jsonText <> '' Then
+			#include 'JSON.au3'
+			$lootComponentList = _JSON_Parse($jsonText)
+		EndIf
+	EndIf
+	If $lootComponentList <> 0 And HasAnyValuableUpgrade($item, $lootComponentList) Then
+		; Info already printed in HasAnyValuableUpgrade
+		Return False
+	EndIf
+
+	; Never sell req 9 or lower weapons (any attribute)
+	If IsWeapon($item) And GetItemReq($item) <= 9 Then
+		Info('[SAFETY] Not selling req9 or lower weapon (req=' & GetItemReq($item) & ')')
+		Return False
+	EndIf
 
 	If $rarity == $RARITY_Green Then Return False
 	;If IsKey($itemID) Then Return True
@@ -914,6 +989,7 @@ Func DefaultShouldSellItem($item)
 EndFunc
 
 
+
 ; Returns True if the item matches the user's loot component list (to be kept)
 Func IsInLootComponentList($item)
 	Local Static $lootComponentList = 0
@@ -924,7 +1000,7 @@ Func IsInLootComponentList($item)
 		$lootComponentList = _JSON_Parse($jsonText)
 	EndIf
 
-	; Check for runes/insignias on armor salvage items
+	; Check for runes/insignias on armor salvage items (double check logic)
 	If isArmorSalvageItem($item) Then
 		Local $modName = GetModName($item)
 		If $modName = '' Then Return False
@@ -968,6 +1044,11 @@ Func IsInLootComponentList($item)
 				Info('[DEBUG] Matched mod2: ' & $mod2)
 				Return True
 			EndIf
+		EndIf
+		; Check req 9
+		If GetItemReq($item) == 9 Then
+			Info('[DEBUG] Matched req 9 weapon')
+			Return True
 		EndIf
 	EndIf
 	Return False

@@ -266,7 +266,7 @@
 				"Man for all seasons (Armor +5 vs Elemental damage)": false,
 				"Survival of the fittest (Armor +5 vs Physical damage)": false,
 				"Ignorance is bliss (Armor +5 Energy -5)": false,
-				"Life is pain (Armor +5 Health -20)": false,
+				"Life is pain (Armor +5 Health -20)": true,
 				"Down but not out (Armor +10 while Health is below 50%)": false,
 				"Be just and fear not (Armor +10 while hexed)": false,
 				"Live for today (Energy +15 Energy regeneration -1)": false
