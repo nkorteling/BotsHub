@@ -140,9 +140,13 @@ Global Const $ID_Kaineng_A_Chance_Encounter	= 861
 ; Nightfall
 Global Const $ID_Sunward_Marches			= 373
 Global Const $ID_Sunspear_Sanctuary			= 387
+Global Const $ID_Forum_Highlands			= 399
 Global Const $ID_Kodash_Bazaar				= 414
 Global Const $ID_Mirror_of_Lyss				= 419
 Global Const $ID_Moddok_Crevice				= 427
+Global Const $ID_Tihark_Orchard				= 428
+Global Const $ID_Holdings_of_Chokhin		= 395
+Global Const $ID_Mihanu_Township			= 396
 Global Const $ID_Command_Post				= 436
 Global Const $ID_Jokos_Domain				= 437
 Global Const $ID_Bone_Palace				= 438

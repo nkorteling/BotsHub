@@ -1,4 +1,4 @@
-{
+﻿{
 	"Armor upgrades": {
 		"All": {
 			"Insignias": {
@@ -6,7 +6,7 @@
 				"Radiant": false,
 				"Stalwart": false,
 				"Brawlers": false,
-				"Blessed": false,
+				"Blessed": true,
 				"Heralds": false,
 				"Sentrys": false
 			},
@@ -24,24 +24,24 @@
 		},
 		"Assassin": {
 			"Insignias": {
-				"Vanguards": false,
-				"Infiltrators": false,
-				"Saboteurs": false,
+				"Vanguards": true,
+				"Infiltrators": true,
+				"Saboteurs": true,
 				"Nightstalkers": true
 			},
 			"Runes": {
-				"Minor Critical Strikes": false,
-				"Minor Dagger Mastery": false,
-				"Minor Deadly Arts": false,
-				"Minor Shadow Arts": false,
-				"Major Critical Strikes": false,
-				"Major Dagger Mastery": false,
-				"Major Deadly Arts": false,
-				"Major Shadow Arts": false,
-				"Superior Critical Strikes": false,
-				"Superior Dagger Mastery": false,
-				"Superior Deadly Arts": false,
-				"Superior Shadow Arts": false
+				"Minor Critical Strikes": true,
+				"Minor Dagger Mastery": true,
+				"Minor Deadly Arts": true,
+				"Minor Shadow Arts": true,
+				"Major Critical Strikes": true,
+				"Major Dagger Mastery": true,
+				"Major Deadly Arts": true,
+				"Major Shadow Arts": true,
+				"Superior Critical Strikes": true,
+				"Superior Dagger Mastery": true,
+				"Superior Deadly Arts": true,
+				"Superior Shadow Arts": true
 			}
 		},
 		"Dervish": {
@@ -93,11 +93,11 @@
 		"Mesmer": {
 			"Insignias": {
 				"Virtuosos": false,
-				"Artificers": false,
+				"Artificers": true,
 				"Prodigys": true
 			},
 			"Runes": {
-				"Minor Domination Magic": false,
+				"Minor Domination Magic": true,
 				"Minor Fast Casting": true,
 				"Minor Illusion Magic": false,
 				"Minor Inspiration Magic": true,
@@ -145,8 +145,8 @@
 				"Minor Blood Magic": false,
 				"Minor Curses": false,
 				"Minor Death Magic": false,
-				"Minor Soul Reaping": false,
-				"Major Blood Magic": false,
+				"Minor Soul Reaping": true,
+				"Major Blood Magic": true,
 				"Major Curses": false,
 				"Major Death Magic": false,
 				"Major Soul Reaping": true,
@@ -209,7 +209,7 @@
 				"Minor Channeling Magic": false,
 				"Minor Communing": false,
 				"Minor Restoration Magic": true,
-				"Minor Spawning Power": false,
+				"Minor Spawning Power": true,
 				"Major Channeling Magic": false,
 				"Major Communing": false,
 				"Major Restoration Magic": false,
@@ -252,7 +252,7 @@
 	},
 	"Inscriptions": {
 		"All": {
-			"Measure for measure (Highly salvageable)": false,
+			"Measure for measure (Highly salvageable)": true,
 			"Show me the money (Improved sale value)": false
 		},
 		"Offhand": {
@@ -273,12 +273,12 @@
 			},
 			"Focus and shield": {
 				"Master of my domain (Item's attribute +1)": false,
-				"Not the face (Armor +10 vs Blunt damage)": false,
-				"Leaf on the wind (Armor +10 vs Cold damage)": false,
-				"Like a rolling stone (Armor +10 vs Earth damage)": false,
-				"Sleep now in the fire (Armor +10 vs Fire damage)": false,
-				"Riders on the storm (Armor +10 vs Lightning damage)": false,
-				"Through thick and thin (Armor +10 vs Piercing damage)": false,
+				"Not the face (Armor +10 vs Blunt damage)": true,
+				"Leaf on the wind (Armor +10 vs Cold damage)": true,
+				"Like a rolling stone (Armor +10 vs Earth damage)": true,
+				"Sleep now in the fire (Armor +10 vs Fire damage)": true,
+				"Riders on the storm (Armor +10 vs Lightning damage)": true,
+				"Through thick and thin (Armor +10 vs Piercing damage)": true,
 				"The riddle of steel (Armor +10 vs Slashing damage)": false,
 				"Sheltered by faith (Received physical damage -2 while Enchanted)": false,
 				"Run for your life (Received physical damage -2 while in a Stance)": false,
@@ -296,7 +296,7 @@
 		},
 		"Weapon": {
 			"All": {
-				"Strength and honor (Damage +15% while Health is above 50%)": false,
+				"Strength and honor (Damage +15% while Health is above 50%)": true,
 				"Guided by fate (Damage +15% while Enchanted)": false,
 				"Dance with death (Damage +15% while in a Stance)": false,
 				"Too much information (Damage +15% vs Hexed foes)": false,
@@ -327,25 +327,22 @@
 				"Fiery (Fire damage)": false,
 				"Icy (Cold damage)": false,
 				"Shocking (Lightning damage)": false,
-
 				"Barbed (Lengthens Bleeding duration on foes by 33%)": false,
 				"Cruel (Lengthens Deep Wound duration on foes by 33%)": false,
 				"Crippling (Lengthens Crippled duration on foes by 33%)": false,
 				"Heavy (Lengthens Weakness duration on foes by 33%)": false,
 				"Poisonous (Lengthens Poison duration on foes by 33%)": false,
-
 				"Furious (Double Adrenaline on hit - Chance 10%)": false,
 				"Sundering (Armor penetration +20% - Chance 20%)": false,
 				"Vampiric (Life Draining 3 Health regeneration -1)": false,
 				"Zealous (Energy gain on hit: 1 Energy regeneration: -1)": false
 			},
 			"Suffix - Grip": {
-				"of Fortitude (Health +30)": false,
+				"of Fortitude (Health +30)": true,
 				"Of Defense (Armor +5)": false,
 				"Of Shelter (Armor +7 vs physical damage)": false,
 				"Of Warding (Armor +7 vs elemental damage)": false,
 				"Of Enchanting (Enchantments last 20% longer)": false,
-
 				"Of The Warrior": false,
 				"Of The Ranger": true,
 				"Of The Necromancer": true,
@@ -353,10 +350,9 @@
 				"Of The Elementalist": false,
 				"Of The Monk": false,
 				"Of The Ritualist": false,
-				"Of The Assassin": false,
+				"Of The Assassin": true,
 				"Of The Paragon": false,
 				"Of The Dervish": false,
-
 				"Of Deathbane": false,
 				"Of Charrslaying": true,
 				"Of Trollslaying": true,
@@ -368,7 +364,6 @@
 				"Of Demon Slaying": false,
 				"Of Ogre Slaying": false,
 				"Of Dragon Slaying": false,
-
 				"Of Mastery (Item's attribute +1 - 20% chance while using skills)": false
 			}
 		},
@@ -378,12 +373,10 @@
 				"Fiery (Fire damage)": false,
 				"Icy (Cold damage)": false,
 				"Shocking (Lightning damage)": false,
-
 				"Barbed (Lengthens Bleeding duration on foes by 33%)": false,
 				"Crippling (Lengthens Crippled duration on foes by 33%)": false,
 				"Poisonous (Lengthens Poison duration on foes by 33%)": false,
 				"Silencing (Lengthens Dazed duration on foes by 33%)": false,
-
 				"Sundering (Armor penetration +20% - Chance 20%)": false,
 				"Vampiric (Life Draining 5 Health regeneration -1)": false,
 				"Zealous (Energy gain on hit: 1 Energy regeneration: -1)": false
@@ -394,7 +387,6 @@
 				"Of Shelter (Armor +7 vs physical damage)": false,
 				"Of Warding (Armor +7 vs elemental damage)": false,
 				"Of Enchanting (Enchantments last 20% longer)": false,
-
 				"Of The Warrior": false,
 				"Of The Ranger": true,
 				"Of The Necromancer": true,
@@ -405,7 +397,6 @@
 				"Of The Assassin": false,
 				"Of The Paragon": false,
 				"Of The Dervish": false,
-
 				"Of Deathbane": false,
 				"Of Charrslaying": true,
 				"Of Trollslaying": true,
@@ -417,7 +408,6 @@
 				"Of Demon Slaying": false,
 				"Of Ogre Slaying": false,
 				"Of Dragon Slaying": false,
-
 				"Of Mastery (Item's attribute +1 - 20% chance while using skills)": false
 			}
 		},
@@ -427,13 +417,11 @@
 				"Fiery (Fire damage)": false,
 				"Icy (Cold damage)": false,
 				"Shocking (Lightning damage)": false,
-
 				"Barbed (Lengthens Bleeding duration on foes by 33%)": false,
 				"Cruel (Lengthens Deep Wound duration on foes by 33%)": false,
 				"Crippling (Lengthens Crippled duration on foes by 33%)": false,
 				"Poisonous (Lengthens Poison duration on foes by 33%)": false,
 				"Silencing (Lengthens Dazed duration on foes by 33%)": false,
-
 				"Furious (Double Adrenaline on hit - Chance 10%)": false,
 				"Sundering (Armor penetration +20% - Chance 20%)": false,
 				"Vampiric (Life Draining 3 Health regeneration -1)": false,
@@ -445,7 +433,6 @@
 				"Of Shelter (Armor +7 vs physical damage)": false,
 				"Of Warding (Armor +7 vs elemental damage)": false,
 				"Of Enchanting (Enchantments last 20% longer)": false,
-
 				"Of The Warrior": false,
 				"Of The Ranger": true,
 				"Of The Necromancer": true,
@@ -456,7 +443,6 @@
 				"Of The Assassin": false,
 				"Of The Paragon": false,
 				"Of The Dervish": false,
-
 				"Of Mastery (Item's attribute +1 - 20% chance while using skills)": false
 			}
 		},
@@ -466,7 +452,6 @@
 				"Of Devotion (Health +45 while Enchanted)": false,
 				"Of Endurance (Health +45 while in a Stance)": false,
 				"Of Valor (Health +60 while Hexed)": false,
-
 				"Of Aptitude (Halves casting time of item's attribute spells - Chance 20%)": true,
 				"Of Swiftness (Halves casting time of spells - Chance 10%)": false
 			}
@@ -477,10 +462,8 @@
 				"Fiery (Fire damage)": false,
 				"Icy (Cold damage)": false,
 				"Shocking (Lightning damage)": false,
-
 				"Cruel (Lengthens Deep Wound duration on foes by 33%)": false,
 				"Heavy (Lengthens Weakness duration on foes by 33%)": false,
-
 				"Furious (Double Adrenaline on hit - Chance 10%)": false,
 				"Sundering (Armor penetration +20% - Chance 20%)": false,
 				"Vampiric (Life Draining 5 Health regeneration -1)": false,
@@ -492,7 +475,6 @@
 				"Of Shelter (Armor +7 vs physical damage)": false,
 				"Of Warding (Armor +7 vs elemental damage)": false,
 				"Of Enchanting (Enchantments last 20% longer)": false,
-
 				"Of The Warrior": false,
 				"Of The Ranger": true,
 				"Of The Necromancer": true,
@@ -503,7 +485,6 @@
 				"Of The Assassin": false,
 				"Of The Paragon": false,
 				"Of The Dervish": false,
-
 				"Of Deathbane": false,
 				"Of Charrslaying": true,
 				"Of Trollslaying": true,
@@ -512,10 +493,9 @@
 				"Of Giant Slaying": true,
 				"Of Dwarf Slaying": true,
 				"Of Tengu Slaying": true,
-				"Of Demon Slaying": false,
+				"Of Demon Slaying": true,
 				"Of Ogre Slaying": false,
 				"Of Dragon Slaying": false,
-
 				"Of Mastery (Item's attribute +1 - 20% chance while using skills)": false
 			}
 		},
@@ -525,25 +505,22 @@
 				"Fiery (Fire damage)": false,
 				"Icy (Cold damage)": false,
 				"Shocking (Lightning damage)": false,
-
 				"Barbed (Lengthens Bleeding duration on foes by 33%)": false,
 				"Cruel (Lengthens Deep Wound duration on foes by 33%)": false,
 				"Crippling (Lengthens Crippled duration on foes by 33%)": false,
 				"Heavy (Lengthens Weakness duration on foes by 33%)": false,
 				"Poisonous (Lengthens Poison duration on foes by 33%)": false,
-
 				"Furious (Double Adrenaline on hit - Chance 10%)": false,
 				"Sundering (Armor penetration +20% - Chance 20%)": true,
 				"Vampiric (Life Draining 5 Health regeneration -1)": true,
 				"Zealous (Energy gain on hit: 1 Energy regeneration: -1)": true
 			},
 			"Suffix - Grip": {
-				"of Fortitude (Health +30)": false,
+				"of Fortitude (Health +30)": true,
 				"Of Defense (Armor +5)": false,
 				"Of Shelter (Armor +7 vs physical damage)": false,
 				"Of Warding (Armor +7 vs elemental damage)": false,
 				"Of Enchanting (Enchantments last 20% longer)": true,
-
 				"Of The Warrior": false,
 				"Of The Ranger": true,
 				"Of The Necromancer": true,
@@ -551,16 +528,15 @@
 				"Of The Elementalist": false,
 				"Of The Monk": false,
 				"Of The Ritualist": false,
-				"Of The Assassin": false,
+				"Of The Assassin": true,
 				"Of The Paragon": false,
 				"Of The Dervish": false,
-
 				"Of Mastery (Item's attribute +1 - 20% chance while using skills)": false
 			}
 		},
 		"Shield": {
 			"Suffix - Handle": {
-				"of Fortitude (Health +30)": false,
+				"of Fortitude (Health +30)": true,
 				"Of Devotion (Health +45 while Enchanted)": false,
 				"Of Endurance (Health +45 while in a Stance)": false,
 				"Of Valor (Health +60 while Hexed)": false
@@ -572,26 +548,23 @@
 				"Fiery (Fire damage)": false,
 				"Icy (Cold damage)": false,
 				"Shocking (Lightning damage)": false,
-
 				"Barbed (Lengthens Bleeding duration on foes by 33%)": false,
 				"Cruel (Lengthens Deep Wound duration on foes by 33%)": false,
 				"Crippling (Lengthens Crippled duration on foes by 33%)": false,
 				"Heavy (Lengthens Weakness duration on foes by 33%)": false,
 				"Poisonous (Lengthens Poison duration on foes by 33%)": false,
 				"Silencing (Lengthens Dazed duration on foes by 33%)": false,
-
 				"Furious (Double Adrenaline on hit - Chance 10%)": false,
 				"Sundering (Armor penetration +20% - Chance 20%)": false,
 				"Vampiric (Life Draining 3 Health regeneration -1)": false,
 				"Zealous (Energy gain on hit: 1 Energy regeneration: -1)": false
 			},
 			"Suffix - Grip": {
-				"of Fortitude (Health +30)": false,
+				"of Fortitude (Health +30)": true,
 				"Of Defense (Armor +5)": false,
 				"Of Shelter (Armor +7 vs physical damage)": false,
 				"Of Warding (Armor +7 vs elemental damage)": false,
 				"Of Enchanting (Enchantments last 20% longer)": true,
-
 				"Of The Warrior": false,
 				"Of The Ranger": true,
 				"Of The Necromancer": true,
@@ -599,17 +572,16 @@
 				"Of The Elementalist": false,
 				"Of The Monk": false,
 				"Of The Ritualist": false,
-				"Of The Assassin": false,
+				"Of The Assassin": true,
 				"Of The Paragon": false,
 				"Of The Dervish": false,
-
 				"Of Mastery (Item's attribute +1 - 20% chance while using skills)": false
 			}
 		},
 		"Staff": {
 			"Prefix - Head": {
 				"Hale (Health +30)": false,
-				"Adept (Halves casting time of spells of item's attribute - Chance 20%)": false,
+				"Adept (Halves casting time of spells of item's attribute - Chance 20%)": true,
 				"Swift (Halves casting time of spells - Chance 10%)": false,
 				"Insightful (Energy +5)": false,
 				"Defensive (Armor +5)": false
@@ -619,8 +591,7 @@
 				"Of Defense (Armor +5)": false,
 				"Of Shelter (Armor +7 vs physical damage)": false,
 				"Of Warding (Armor +7 vs elemental damage)": false,
-				"Of Enchanting (Enchantments last 20% longer)": false,
-
+				"Of Enchanting (Enchantments last 20% longer)": true,
 				"Of The Warrior": false,
 				"Of The Ranger": true,
 				"Of The Necromancer": true,
@@ -631,7 +602,6 @@
 				"Of The Assassin": false,
 				"Of The Paragon": false,
 				"Of The Dervish": false,
-
 				"Of Deathbane": false,
 				"Of Charrslaying": true,
 				"Of Trollslaying": true,
@@ -640,10 +610,9 @@
 				"Of Giant Slaying": true,
 				"Of Dwarf Slaying": true,
 				"Of Tengu Slaying": true,
-				"Of Demon Slaying": false,
+				"Of Demon Slaying": true,
 				"Of Ogre Slaying": false,
 				"Of Dragon Slaying": false,
-
 				"Of Mastery (Item's attribute +1 - 20% chance while using skills)": false,
 				"Of Devotion (Health +45 while Enchanted)": false,
 				"Of Endurance (Health +45 while in a Stance)": false,
@@ -656,24 +625,21 @@
 				"Fiery (Fire damage)": false,
 				"Icy (Cold damage)": false,
 				"Shocking (Lightning damage)": false,
-
 				"Barbed (Lengthens Bleeding duration on foes by 33%)": false,
 				"Cruel (Lengthens Deep Wound duration on foes by 33%)": false,
 				"Crippling (Lengthens Crippled duration on foes by 33%)": false,
 				"Poisonous (Lengthens Poison duration on foes by 33%)": false,
-
 				"Furious (Double Adrenaline on hit - Chance 10%)": false,
 				"Sundering (Armor penetration +20% - Chance 20%)": false,
 				"Vampiric (Life Draining 3 Health regeneration -1)": false,
 				"Zealous (Energy gain on hit: 1 Energy regeneration: -1)": false
 			},
 			"Suffix - Pommel": {
-				"of Fortitude (Health +30)": false,
+				"of Fortitude (Health +30)": true,
 				"Of Defense (Armor +5)": false,
 				"Of Shelter (Armor +7 vs physical damage)": false,
 				"Of Warding (Armor +7 vs elemental damage)": false,
 				"Of Enchanting (Enchantments last 20% longer)": false,
-
 				"Of The Warrior": false,
 				"Of The Ranger": true,
 				"Of The Necromancer": true,
@@ -681,10 +647,9 @@
 				"Of The Elementalist": false,
 				"Of The Monk": false,
 				"Of The Ritualist": false,
-				"Of The Assassin": false,
+				"Of The Assassin": true,
 				"Of The Paragon": false,
 				"Of The Dervish": false,
-
 				"Of Deathbane": false,
 				"Of Charrslaying": true,
 				"Of Trollslaying": true,
@@ -696,15 +661,13 @@
 				"Of Demon Slaying": false,
 				"Of Ogre Slaying": false,
 				"Of Dragon Slaying": false,
-
 				"Of Mastery (Item's attribute +1 - 20% chance while using skills)": false
 			}
 		},
 		"Wand": {
 			"Suffix - Wrapping": {
-				"Of Memory (Halves skill recharge of item's attribute spells - Chance 20%)": false,
+				"Of Memory (Halves skill recharge of item's attribute spells - Chance 20%)": true,
 				"Of Quickening (Halves skill recharge of spells - Chance 10%)": false,
-
 				"Of The Warrior": false,
 				"Of The Ranger": false,
 				"Of The Necromancer": true,

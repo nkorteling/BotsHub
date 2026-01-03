@@ -78,6 +78,8 @@
 #include 'src/Farm-Vanguard.au3'
 #include 'src/Farm-Voltaic.au3'
 #include 'src/Farm-WarSupplyKeiran.au3'
+#include 'src/Farm-Skree.au3'
+#include 'src/Farm-HoldingsOfChokhin.au3'
 
 #include 'lib/JSON.au3'
 #EndRegion Includes
@@ -121,7 +123,7 @@ Global $DISTRICT_NAME = 'Random'
 Global $BAGS_COUNT = 5
 Global $INVENTORY_SPACE_NEEDED = 5
 
-Global $AVAILABLE_FARMS = 'Boreal|Corsairs|Dragon Moss|Eden Iris|Feathers|Follow|FoW|Froggy|Gemstone|Gemstone Stygian|Jade Brotherhood|Kournans|Kurzick|Lightbringer|Lightbringer 2|Luxon|Mantids|Ministerial Commendations|Nexus Challenge|Norn|OmniFarm|Pongmei|Raptors|SoO|SpiritSlaves|Sunspear Armor|Tasca|Vaettirs|Vanguard|Voltaic|War Supply Keiran|Storage|Tests|TestSuite|Dynamic'
+Global $AVAILABLE_FARMS = 'Boreal|Corsairs|Dragon Moss|Eden Iris|Feathers|Follow|FoW|Froggy|Gemstone|Gemstone Stygian|Jade Brotherhood|Kournans|Kurzick|Lightbringer|Lightbringer 2|Luxon|Mantids|Ministerial Commendations|Nexus Challenge|Norn|OmniFarm|Pongmei|Raptors|SoO|SpiritSlaves|Sunspear Armor|Tasca|Vaettirs|Vanguard|Voltaic|War Supply Keiran|Storage|Tests|TestSuite|Dynamic|Skree|Holdings Of Chokhin'
 Global $AVAILABLE_DISTRICTS = '|Random|America|China|English|French|German|International|Italian|Japan|Korea|Polish|Russian|Spanish'
 #EndRegion Variables
 
@@ -905,6 +907,12 @@ Func RunFarmLoop($Farm)
 			$result = RunTests($STATUS)
 		Case 'TestSuite'
 			$result = RunTestSuite($STATUS)
+		Case 'Skree'
+			$INVENTORY_SPACE_NEEDED = 5
+			$result = SkreeFarm($STATUS)
+		Case 'Holdings Of Chokhin'
+			$INVENTORY_SPACE_NEEDED = 5
+			$result = HOC_Farm($STATUS)
 		Case Else
 			MsgBox(0, 'Error', 'This farm does not exist.')
 	EndSwitch

@@ -23,6 +23,7 @@
 #include 'GWA2_ID.au3'
 #include 'GWA2.au3'
 #include 'Utils.au3'
+
 #include 'Utils-Items_Modstructs.au3'
 #include 'Utils-Debugger.au3'
 #include 'JSON.au3'
@@ -71,6 +72,7 @@ EndFunc
 
 ;~ Function to deal with inventory after farm
 Func ActiveInventoryManagement()
+	Debug("[ActiveInventoryManagement] TEST DEBUG OUTPUT")
 	; Operations order :
 	; 1-Store unids if desired
 	; 2-Sort items
@@ -82,6 +84,8 @@ Func ActiveInventoryManagement()
 	; 8-Buy ectos with surplus
 	; 9-Store items
 	; 10-Balance character's gold level
+	; Unconditional call for debug/testing
+	; StoreAllMaterialsIfSpace() removed
 	If GUICtrlRead($GUI_Checkbox_StoreUnidentifiedGoldItems) == $GUI_CHECKED Then
 		If GetMapID() <> $ID_Eye_of_the_North Then DistrictTravel($ID_Eye_of_the_North, $DISTRICT_NAME)
 		StoreItemsInXunlaiStorage(IsUnidentifiedGoldItem)
@@ -132,7 +136,7 @@ Func ActiveInventoryManagement()
 	EndIf
 	If GUICtrlRead($GUI_Checkbox_BuyEctoplasm) == $GUI_CHECKED And GetGoldCharacter() > 10000 Then BuyRareMaterialFromMerchantUntilPoor($ID_Glob_of_Ectoplasm, 10000, $ID_Obsidian_Shard)
 	If GUICtrlRead($GUI_Checkbox_StoreTheRest) == $GUI_CHECKED Then StoreItemsInXunlaiStorage()
-EndFunc
+	EndFunc
 
 
 ;~ Function to deal with inventory during farm
@@ -815,6 +819,9 @@ Func StoreItemsInXunlaiStorage($shouldStoreItem = DefaultShouldStoreItem)
 		Next
 	Next
 EndFunc
+
+;~ Store all materials in the material storage tab if there is space
+; StoreAllMaterialsIfSpace() function removed
 
 
 ;~ Store an item in the Xunlai Storage
