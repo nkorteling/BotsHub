@@ -560,9 +560,59 @@ Func MoveItemsOutOfEquipmentBag()
 	Return $cursor
 EndFunc
 
+; Centralized protection routine for item selling
+Func ShouldProtectItem($item)
+	; Prevent selling if item is in the custom loot component list
+	If IsInLootComponentList($item) Then Return True
+
+	; General safety: Never sell a weapon with any valuable mod, inscription, or rune
+	Local Static $lootComponentList = 0
+	If $lootComponentList = 0 Then
+		Local $jsonText = FileRead(@ScriptDir & '\..\..\conf\loot\upgrade_components.json')
+		If Not @error And $jsonText <> '' Then
+			#include 'JSON.au3'
+			$lootComponentList = _JSON_Parse($jsonText)
+		EndIf
+	EndIf
+	If $lootComponentList <> 0 And HasAnyValuableUpgrade($item, $lootComponentList) Then
+		Return True
+	EndIf
+
+	; Never sell req 9 or lower weapons (any attribute) if protection is enabled
+	Local $protectQ9 = GUICtrlRead($SellQ9Checkbox) = $GUI_CHECKED
+	If IsWeapon($item) And $protectQ9 And GetItemReq($item) <= 9 Then
+		Return True
+	EndIf
+
+	; Never sell green rarity items
+	If GetRarity($item) == $RARITY_Green Then Return True
+
+
+	; Never sell keys if protection is enabled
+	Local $protectKeys = GUICtrlRead($SellKeysCheckbox) = $GUI_CHECKED
+	Local $itemID = DllStructGetData($item, 'ModelID')
+	If $protectKeys And IsKey($itemID) Then Return True
+
+	; Never sell scrolls (blue, gold, UW, FoW) if protection is enabled
+	Local $protectScrolls = GUICtrlRead($SellScrollsCheckbox) = $GUI_CHECKED
+	If $protectScrolls Then
+		If IsBlueScroll($itemID) Then Return True
+		If IsGoldScroll($itemID) Then Return True
+		If $itemID == $ID_UW_Scroll Or $itemID == $ID_FoW_Scroll Then Return True
+	EndIf
+
+	; Never sell armor with valuable upgrades
+	If isArmorSalvageItem($item) Then
+		If ContainsValuableUpgrades($item) Then Return True
+	EndIf
+
+	Return False
+EndFunc
+
 
 ;~ Sell general items to trader
-Func SellItemsToMerchant($shouldSellItem = DefaultShouldSellItem, $dryRun = False)
+Func SellItemsToMerchant($dryRun = False)
+	; Centralized sell logic: all checks, filtering, and protections happen here
 	If GetMapID() <> $ID_Eye_of_the_North Then DistrictTravel($ID_Eye_of_the_North, $DISTRICT_NAME)
 	Info('Moving to merchant')
 	Local $merchant = GetNearestNPCToCoords(-2700, 1075)
@@ -570,21 +620,106 @@ Func SellItemsToMerchant($shouldSellItem = DefaultShouldSellItem, $dryRun = Fals
 	GoToNPC($merchant)
 	RandomSleep(500)
 
-	Info('Selling items')
+	; If we have more than 60k, we risk running into the situation we can't sell because we're too rich, so we store some in xunlai
+	If GetGoldCharacter() > 60000 Then BalanceCharacterGold(10000)
+
+	; Sell materials if enabled
+	If GUICtrlRead($GUI_Checkbox_SellMaterials) == $GUI_CHECKED And HasMaterials() Then
+		; Sell basic materials
+		If HasBasicMaterials() Then SellMaterialsToMerchant_Internal($dryRun)
+		; Sell rare materials
+		If HasRareMaterials() Then SellRareMaterialsToMerchant_Internal($dryRun)
+	EndIf
+
+	; Sell items if enabled
+	If GUICtrlRead($GUI_Checkbox_SellItems) == $GUI_CHECKED Then
+		Info('Selling items')
+		Local $item, $itemID
+		For $bagIndex = 1 To $BAGS_COUNT
+			Local $bag = GetBag($bagIndex)
+			For $i = 1 To DllStructGetData($bag, 'slots')
+				$item = GetItemBySlot($bagIndex, $i)
+				$itemID = DllStructGetData($item, 'ModelID')
+				If $itemID <> 0 Then
+					; Use the protection routine
+					If Not ShouldProtectItem($item) And DefaultShouldSellItem($item) Then
+						If Not $dryRun Then
+							SellItem($item, DllStructGetData($item, 'Quantity'))
+							RandomSleep(GetPing() + 200)
+						Else
+							Info('[DryRun] Would sell item at ' & $bagIndex & ':' & $i)
+						EndIf
+					EndIf
+				EndIf
+			Next
+		Next
+	EndIf
+EndFunc
+
+; Internal: Sell basic materials only (no GUI checks)
+Func SellMaterialsToMerchant_Internal($dryRun = False)
+	Local $materialMerchant = GetNearestNPCToCoords(-1850, 875)
+	UseCitySpeedBoost()
+	GoToNPC($materialMerchant)
+	RandomSleep(500)
 	Local $item, $itemID
-	For $bagIndex = 1 To $BAGS_COUNT
+	For $bagIndex = 1 To _Min(4, $BAGS_COUNT)
 		Local $bag = GetBag($bagIndex)
 		For $i = 1 To DllStructGetData($bag, 'slots')
 			$item = GetItemBySlot($bagIndex, $i)
-			$itemID = DllStructGetData($item, 'ModelID')
-			If $itemID <> 0 Then
-				If $shouldSellItem($item) Then
-					If Not $dryRun Then
-						SellItem($item, DllStructGetData($item, 'Quantity'))
-						RandomSleep(GetPing() + 200)
-					EndIf
+			If DefaultShouldSellMaterial($item) Then
+				$itemID = DllStructGetData($item, 'ID')
+				Local $totalAmount = DllStructGetData($item, 'Quantity')
+				If $dryRun Then
+					Info('[DryRun] Would sell ' & $totalAmount & ' material at ' & $bagIndex & '-' & $i)
 				Else
-					If $dryRun Then Info('Will not sell item at ' & $bagIndex & ':' & $i)
+					Debug('Selling ' & $totalAmount & ' material ' & $bagIndex & '-' & $i)
+					While $totalAmount > 9
+						TraderRequestSell($itemID)
+						Sleep(GetPing() + 200)
+						TraderSell()
+						Sleep(GetPing() + 200)
+						$totalAmount -= 10
+						If ($totalAmount < 10) Then
+							$item = GetItemBySlot($bagIndex, $i)
+							$totalAmount = DllStructGetData($item, 'Quantity')
+						EndIf
+					WEnd
+				EndIf
+			EndIf
+		Next
+	Next
+EndFunc
+
+; Internal: Sell rare materials only (no GUI checks)
+Func SellRareMaterialsToMerchant_Internal($dryRun = False)
+	Local $rareMaterialMerchant = GetNearestNPCToCoords(-2100, 1125)
+	UseCitySpeedBoost()
+	GoToNPC($rareMaterialMerchant)
+	RandomSleep(250)
+	Local $item, $itemID
+	For $bagIndex = 1 To _Min(4, $BAGS_COUNT)
+		Local $bag = GetBag($bagIndex)
+		For $i = 1 To DllStructGetData($bag, 'slots')
+			$item = GetItemBySlot($bagIndex, $i)
+			If DefaultShouldSellRareMaterial($item) Then
+				$itemID = DllStructGetData($item, 'ID')
+				Local $totalAmount = DllStructGetData($item, 'Quantity')
+				If $dryRun Then
+					Info('[DryRun] Would sell ' & $totalAmount & ' rare material at ' & $bagIndex & '-' & $i)
+				Else
+					Debug('Selling ' & $totalAmount & ' material ' & $bagIndex & '-' & $i)
+					While $totalAmount > 0
+						TraderRequestSell($itemID)
+						Sleep(GetPing() + 200)
+						TraderSell()
+						Sleep(GetPing() + 200)
+						$totalAmount -= 1
+						If ($totalAmount < 1) Then
+							$item = GetItemBySlot($bagIndex, $i)
+							$totalAmount = DllStructGetData($item, 'Quantity')
+						EndIf
+					WEnd
 				EndIf
 			EndIf
 		Next
@@ -898,33 +1033,42 @@ EndFunc
 
 
 
-;~ Helper: Returns True if the item has any valuable mod, inscription, or rune (from lootComponentList)
+
+;~ Helper: Returns True if the item has any valuable mod, inscription, or rune (from lootComponentList) and the corresponding protection is enabled
 Func HasAnyValuableUpgrade($item, ByRef $lootComponentList)
+	Local $protectMods = GUICtrlRead($SellModsCheckbox) = $GUI_CHECKED
+	Local $protectInscriptions = GUICtrlRead($SellInscriptionsCheckbox) = $GUI_CHECKED
+	Local $protectRunes = GUICtrlRead($SellRunesCheckbox) = $GUI_CHECKED
+
 	; Check mods (mod1, mod2)
 	Local $mod1 = GetMod1Name($item)
 	Local $mod2 = GetMod2Name($item)
-	If $mod1 <> '' And IsMap($lootComponentList['Weapon upgrades']['Mods']) Then
-		If $lootComponentList['Weapon upgrades']['Mods'][$mod1] = True Then
-			Info('[SAFETY] Not selling item with valuable mod: ' & $mod1)
-			Return True
+	If $protectMods Then
+		If $mod1 <> '' And IsMap($lootComponentList['Weapon upgrades']['Mods']) Then
+			If $lootComponentList['Weapon upgrades']['Mods'][$mod1] = True Then
+				Info('[SAFETY] Not selling item with valuable mod: ' & $mod1)
+				Return True
+			EndIf
 		EndIf
-	EndIf
-	If $mod2 <> '' And IsMap($lootComponentList['Weapon upgrades']['Mods']) Then
-		If $lootComponentList['Weapon upgrades']['Mods'][$mod2] = True Then
-			Info('[SAFETY] Not selling item with valuable mod: ' & $mod2)
-			Return True
+		If $mod2 <> '' And IsMap($lootComponentList['Weapon upgrades']['Mods']) Then
+			If $lootComponentList['Weapon upgrades']['Mods'][$mod2] = True Then
+				Info('[SAFETY] Not selling item with valuable mod: ' & $mod2)
+				Return True
+			EndIf
 		EndIf
 	EndIf
 	; Check inscription
-	Local $inscription = GetInscriptionName($item)
-	If $inscription <> '' And IsMap($lootComponentList['Weapon upgrades']['Inscriptions']) Then
-		If $lootComponentList['Weapon upgrades']['Inscriptions'][$inscription] = True Then
-			Info('[SAFETY] Not selling item with valuable inscription: ' & $inscription)
-			Return True
+	If $protectInscriptions Then
+		Local $inscription = GetInscriptionName($item)
+		If $inscription <> '' And IsMap($lootComponentList['Weapon upgrades']['Inscriptions']) Then
+			If $lootComponentList['Weapon upgrades']['Inscriptions'][$inscription] = True Then
+				Info('[SAFETY] Not selling item with valuable inscription: ' & $inscription)
+				Return True
+			EndIf
 		EndIf
 	EndIf
 	; Check runes/insignias for armor
-	If isArmorSalvageItem($item) Then
+	If isArmorSalvageItem($item) And $protectRunes Then
 		Local $modName = GetModName($item)
 		If $modName = '' Then Return False
 		Local $classes[11] = ['All', 'Assassin', 'Dervish', 'Elementalist', 'Mesmer', 'Monk', 'Necromancer', 'Paragon', 'Ranger', 'Ritualist', 'Warrior']
@@ -971,8 +1115,9 @@ Func DefaultShouldSellItem($item)
 		Return False
 	EndIf
 
-	; Never sell req 9 or lower weapons (any attribute)
-	If IsWeapon($item) And GetItemReq($item) <= 9 Then
+	; Never sell req 9 or lower weapons (any attribute) if protection is enabled
+	Local $protectQ9 = GUICtrlRead($SellQ9Checkbox) = $GUI_CHECKED
+	If IsWeapon($item) And $protectQ9 And GetItemReq($item) <= 9 Then
 		Info('[SAFETY] Not selling req9 or lower weapon (req=' & GetItemReq($item) & ')')
 		Return False
 	EndIf

@@ -161,6 +161,7 @@ Global $GUI_Group_GlobalOptions, _
 		$GUI_Checkbox_LoopRuns, $GUI_Checkbox_HM, $GUI_Checkbox_StoreUnidentifiedGoldItems, $GUI_Checkbox_SortItems, $GUI_Checkbox_CollectData, $GUI_Checkbox_IdentifyAllItems, _
 		$GUI_Checkbox_SalvageItems, $GUI_Checkbox_SellItems, $GUI_Checkbox_SellMaterials, $GUI_Checkbox_StoreTheRest, $GUI_Checkbox_StoreGold, $GUI_Checkbox_BuyEctoplasm
 Global $GUI_Group_ConsumableOptions, $GUI_Checkbox_UseConsumables, $GUI_Checkbox_FarmMaterials, $GUI_Checkbox_DisableRendering
+Global $GUI_Checkbox_ProtectQ9, $GUI_Checkbox_ProtectGreens, $GUI_Checkbox_ProtectMods, $GUI_Checkbox_ProtectInscriptions, $GUI_Checkbox_ProtectRunes, $GUI_Checkbox_ProtectKeys, $GUI_Checkbox_ProtectScrolls
 Global $GUI_Group_BaseLootOptions, _
 		$GUI_Checkbox_LootEverything, $GUI_Checkbox_LootNothing, $GUI_Checkbox_LootRareMaterials, $GUI_Checkbox_LootBasicMaterials, $GUI_Checkbox_LootKeys, $GUI_Checkbox_LootArmorSalvageables, _
 		$GUI_Checkbox_LootTomes, $GUI_Checkbox_LootDyes, $GUI_Checkbox_LootScrolls
@@ -175,9 +176,10 @@ Global $GUI_TreeView_Components, $GUI_JSON_Components, $GUI_ExpandComponentsButt
 Global $GUI_Label_ToDoList
 
 
+
 ;------------------------------------------------------
-; Title...........:	_guiCreate
-; Description.....:	Create the main GUI
+; Title...........:\t_guiCreate
+; Description.....:\tCreate the main GUI
 ;------------------------------------------------------
 Func createGUI()
 	$GUI_GWBotHub = GUICreate('GW Bot Hub', 600, 450, -1, -1) ; -1, -1 automatically positions GUI in the middle of the screen, alternatively can do calculations with inbuilt @DesktopWidth and @DesktopHeight
@@ -303,17 +305,39 @@ Func createGUI()
 
 	$GUI_Group_GlobalOptions = GUICtrlCreateGroup('Options', 21, 39, 271, 361)
 	$GUI_Checkbox_LoopRuns = GUICtrlCreateCheckbox('Loop Runs', 31, 64, 156, 20)
-	$GUI_Checkbox_HM = GUICtrlCreateCheckbox('HM', 31, 94, 156, 20)
-	$GUI_Checkbox_StoreUnidentifiedGoldItems = GUICtrlCreateCheckbox('Store Unidentified Gold Items', 31, 124, 156, 20)
-	$GUI_Checkbox_SortItems = GUICtrlCreateCheckbox('Sort Items', 31, 154, 156, 20)
-	$GUI_Checkbox_IdentifyAllItems = GUICtrlCreateCheckbox('Identify all items', 31, 184, 156, 20)
-	$GUI_Checkbox_CollectData = GUICtrlCreateCheckbox('Collect data', 31, 214, 156, 20)
-	$GUI_Checkbox_SalvageItems = GUICtrlCreateCheckbox('Salvage items', 31, 244, 156, 20)
-	$GUI_Checkbox_SellMaterials = GUICtrlCreateCheckbox('Sell Materials', 31, 274, 156, 20)
-	$GUI_Checkbox_SellItems = GUICtrlCreateCheckbox('Sell Items', 31, 304, 156, 20)
-	$GUI_Checkbox_BuyEctoplasm = GUICtrlCreateCheckbox('Buy ectoplasm', 31, 334, 156, 20)
-	$GUI_Checkbox_StoreTheRest = GUICtrlCreateCheckbox('Store the rest', 31, 364, 100, 20)
-	$GUI_Checkbox_StoreGold = GUICtrlCreateCheckbox('Store Gold', 168, 364, 100, 20)
+	$GUI_Checkbox_HM = GUICtrlCreateCheckbox('HM', 31, 84, 156, 20)
+	$GUI_Checkbox_StoreUnidentifiedGoldItems = GUICtrlCreateCheckbox('Store Unidentified Gold Items', 31, 104, 156, 20)
+	$GUI_Checkbox_SortItems = GUICtrlCreateCheckbox('Sort Items', 31, 124, 156, 20)
+	$GUI_Checkbox_IdentifyAllItems = GUICtrlCreateCheckbox('Identify all items', 31, 144, 156, 20)
+	$GUI_Checkbox_CollectData = GUICtrlCreateCheckbox('Collect data', 31, 164, 156, 20)
+	$GUI_Checkbox_SalvageItems = GUICtrlCreateCheckbox('Salvage items', 31, 184, 156, 20)
+	$GUI_Checkbox_SellMaterials = GUICtrlCreateCheckbox('Sell Materials', 31, 204, 156, 20)
+	$GUI_Checkbox_SellItems = GUICtrlCreateCheckbox('Sell Items', 31, 224, 156, 20)
+	GUICtrlSetOnEvent($GUI_Checkbox_SellItems, "_OnSellItemsCheckboxChange")
+
+	; Protect group (left column)
+	$GUI_Checkbox_ProtectQ9 = GUICtrlCreateCheckbox('Protect Q9- Weapons', 31, 254, 156, 20)
+	$GUI_Checkbox_ProtectGreens = GUICtrlCreateCheckbox('Protect Green Items', 31, 274, 156, 20)
+	$GUI_Checkbox_ProtectKeys = GUICtrlCreateCheckbox('Protect Keys', 31, 294, 156, 20)
+	$GUI_Checkbox_ProtectScrolls = GUICtrlCreateCheckbox('Protect Scrolls', 31, 314, 156, 20)
+
+	; Protect group (right column)
+	$GUI_Checkbox_ProtectMods = GUICtrlCreateCheckbox('Protect Mods', 170, 254, 120, 20)
+	$GUI_Checkbox_ProtectInscriptions = GUICtrlCreateCheckbox('Protect Inscriptions', 170, 274, 120, 20)
+	$GUI_Checkbox_ProtectRunes = GUICtrlCreateCheckbox('Protect Runes', 170, 294, 120, 20)
+	; Check all protect checkboxes by default
+	GUICtrlSetState($GUI_Checkbox_ProtectQ9, $GUI_CHECKED)
+	GUICtrlSetState($GUI_Checkbox_ProtectGreens, $GUI_CHECKED)
+	GUICtrlSetState($GUI_Checkbox_ProtectKeys, $GUI_CHECKED)
+	GUICtrlSetState($GUI_Checkbox_ProtectScrolls, $GUI_CHECKED)
+	GUICtrlSetState($GUI_Checkbox_ProtectMods, $GUI_CHECKED)
+	GUICtrlSetState($GUI_Checkbox_ProtectInscriptions, $GUI_CHECKED)
+	GUICtrlSetState($GUI_Checkbox_ProtectRunes, $GUI_CHECKED)
+
+	; Other options at the bottom
+	$GUI_Checkbox_BuyEctoplasm = GUICtrlCreateCheckbox('Buy ectoplasm', 31, 354, 156, 20)
+	$GUI_Checkbox_StoreTheRest = GUICtrlCreateCheckbox('Store the rest', 31, 374, 100, 20)
+	$GUI_Checkbox_StoreGold = GUICtrlCreateCheckbox('Store Gold', 168, 374, 100, 20)
 	GUICtrlCreateGroup('', -99, -99, 1, 1)
 
 	$GUI_Group_ConsumableOptions = GUICtrlCreateGroup('More options', 305, 40, 271, 361)
@@ -424,8 +448,12 @@ Func createGUI()
 	GUICtrlSetState($GUI_Checkbox_LootCandyCaneShards, $GUI_CHECKED)
 	GUICtrlSetState($GUI_Checkbox_LootTrophies, $GUI_CHECKED)
 
+
 	GUIRegisterMsg($WM_COMMAND, 'WM_COMMAND_Handler')
 	GUIRegisterMsg($WM_NOTIFY, 'WM_NOTIFY_Handler')
+
+	; Ensure protect checkboxes are enabled/disabled correctly on initial load
+	_OnSellItemsCheckboxChange()
 EndFunc
 
 
@@ -437,6 +465,19 @@ Func _GUICtrlTab_SetBkColor($gui, $parentTab, $color)
 	GUICtrlCreateLabel('', $tabPosition[0]+2, $tabPosition[1]+$tabRectangle[3]+4, $tabPosition[2]-6, $tabPosition[3]-$tabRectangle[3]-7)
 	GUICtrlSetBkColor(-1, $color)
 	GUICtrlSetState(-1, $GUI_DISABLE)
+EndFunc
+
+; Handler to enable/disable protect checkboxes based on Sell Items
+Func _OnSellItemsCheckboxChange()
+	Local $checked = BitAND(GUICtrlRead($GUI_Checkbox_SellItems), $GUI_CHECKED)
+	Local $state = $checked ? $GUI_ENABLE : $GUI_DISABLE
+	GUICtrlSetState($GUI_Checkbox_ProtectQ9, $state)
+	GUICtrlSetState($GUI_Checkbox_ProtectGreens, $state)
+	GUICtrlSetState($GUI_Checkbox_ProtectKeys, $state)
+	GUICtrlSetState($GUI_Checkbox_ProtectScrolls, $state)
+	GUICtrlSetState($GUI_Checkbox_ProtectMods, $state)
+	GUICtrlSetState($GUI_Checkbox_ProtectInscriptions, $state)
+	GUICtrlSetState($GUI_Checkbox_ProtectRunes, $state)
 EndFunc
 
 
