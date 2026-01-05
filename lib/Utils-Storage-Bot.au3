@@ -27,7 +27,16 @@
 #include 'Utils-Debugger.au3'
 #include 'JSON.au3'
 
+
 Opt('MustDeclareVars', 1)
+
+; Reference GUI protect checkboxes from main GUI
+Global $GUI_Checkbox_ProtectQ9
+Global $GUI_Checkbox_ProtectKeys
+Global $GUI_Checkbox_ProtectScrolls
+Global $GUI_Checkbox_ProtectMods
+Global $GUI_Checkbox_ProtectInscriptions
+Global $GUI_Checkbox_ProtectRunes
 
 Global $SQLITE_DB
 
@@ -579,7 +588,7 @@ Func ShouldProtectItem($item)
 	EndIf
 
 	; Never sell req 9 or lower weapons (any attribute) if protection is enabled
-	Local $protectQ9 = GUICtrlRead($SellQ9Checkbox) = $GUI_CHECKED
+	Local $protectQ9 = GUICtrlRead($GUI_Checkbox_ProtectQ9) = $GUI_CHECKED
 	If IsWeapon($item) And $protectQ9 And GetItemReq($item) <= 9 Then
 		Return True
 	EndIf
@@ -589,12 +598,12 @@ Func ShouldProtectItem($item)
 
 
 	; Never sell keys if protection is enabled
-	Local $protectKeys = GUICtrlRead($SellKeysCheckbox) = $GUI_CHECKED
+	Local $protectKeys = GUICtrlRead($GUI_Checkbox_ProtectKeys) = $GUI_CHECKED
 	Local $itemID = DllStructGetData($item, 'ModelID')
 	If $protectKeys And IsKey($itemID) Then Return True
 
 	; Never sell scrolls (blue, gold, UW, FoW) if protection is enabled
-	Local $protectScrolls = GUICtrlRead($SellScrollsCheckbox) = $GUI_CHECKED
+	Local $protectScrolls = GUICtrlRead($GUI_Checkbox_ProtectScrolls) = $GUI_CHECKED
 	If $protectScrolls Then
 		If IsBlueScroll($itemID) Then Return True
 		If IsGoldScroll($itemID) Then Return True
@@ -1035,55 +1044,65 @@ EndFunc
 
 
 ;~ Helper: Returns True if the item has any valuable mod, inscription, or rune (from lootComponentList) and the corresponding protection is enabled
-Func HasAnyValuableUpgrade($item, ByRef $lootComponentList)
-	Local $protectMods = GUICtrlRead($SellModsCheckbox) = $GUI_CHECKED
-	Local $protectInscriptions = GUICtrlRead($SellInscriptionsCheckbox) = $GUI_CHECKED
-	Local $protectRunes = GUICtrlRead($SellRunesCheckbox) = $GUI_CHECKED
 
-	; Check mods (mod1, mod2)
-	Local $mod1 = GetMod1Name($item)
-	Local $mod2 = GetMod2Name($item)
-	If $protectMods Then
-		If $mod1 <> '' And IsMap($lootComponentList['Weapon upgrades']['Mods']) Then
-			If $lootComponentList['Weapon upgrades']['Mods'][$mod1] = True Then
-				Info('[SAFETY] Not selling item with valuable mod: ' & $mod1)
-				Return True
-			EndIf
-		EndIf
-		If $mod2 <> '' And IsMap($lootComponentList['Weapon upgrades']['Mods']) Then
-			If $lootComponentList['Weapon upgrades']['Mods'][$mod2] = True Then
-				Info('[SAFETY] Not selling item with valuable mod: ' & $mod2)
-				Return True
-			EndIf
-		EndIf
-	EndIf
-	; Check inscription
-	If $protectInscriptions Then
-		Local $inscription = GetInscriptionName($item)
-		If $inscription <> '' And IsMap($lootComponentList['Weapon upgrades']['Inscriptions']) Then
-			If $lootComponentList['Weapon upgrades']['Inscriptions'][$inscription] = True Then
-				Info('[SAFETY] Not selling item with valuable inscription: ' & $inscription)
-				Return True
-			EndIf
-		EndIf
-	EndIf
-	; Check runes/insignias for armor
-	If isArmorSalvageItem($item) And $protectRunes Then
-		Local $modName = GetModName($item)
-		If $modName = '' Then Return False
-		Local $classes[11] = ['All', 'Assassin', 'Dervish', 'Elementalist', 'Mesmer', 'Monk', 'Necromancer', 'Paragon', 'Ranger', 'Ritualist', 'Warrior']
-		For $i = 0 To UBound($classes) - 1
-			Local $class = $classes[$i]
-			If IsMap($lootComponentList['Armor upgrades'][$class]['Insignias']) Then
-				If $lootComponentList['Armor upgrades'][$class]['Insignias'][$modName] = True Then
-					Info('[SAFETY] Not selling item with valuable insignia: ' & $modName)
+Func HasAnyValuableUpgrade($item, ByRef $lootComponentList)
+	Local $protectMods = GUICtrlRead($GUI_Checkbox_ProtectMods) = $GUI_CHECKED
+	Local $protectInscriptions = GUICtrlRead($GUI_Checkbox_ProtectInscriptions) = $GUI_CHECKED
+	Local $protectRunes = GUICtrlRead($GUI_Checkbox_ProtectRunes) = $GUI_CHECKED
+
+	Local $modstruct = GetModStruct($item)
+	If Not $modstruct Then Return False
+
+
+	; Check mods
+	If $protectMods And IsMap($lootComponentList) And IsMap($lootComponentList['Weapon upgrades']) And IsMap($lootComponentList['Weapon upgrades']['Mods']) Then
+		For $modName In MapKeys($lootComponentList['Weapon upgrades']['Mods'])
+			If $lootComponentList['Weapon upgrades']['Mods'][$modName] = True Then
+				If StringInStr($modstruct, $modName) > 0 Then
+					Info('[SAFETY] Not selling item with valuable mod: ' & $modName)
 					Return True
 				EndIf
 			EndIf
-			If IsMap($lootComponentList['Armor upgrades'][$class]['Runes']) Then
-				If $lootComponentList['Armor upgrades'][$class]['Runes'][$modName] = True Then
-					Info('[SAFETY] Not selling item with valuable rune: ' & $modName)
+		Next
+	EndIf
+
+	; Check inscriptions
+	If $protectInscriptions And IsMap($lootComponentList) And IsMap($lootComponentList['Weapon upgrades']) And IsMap($lootComponentList['Weapon upgrades']['Inscriptions']) Then
+		For $inscriptionName In MapKeys($lootComponentList['Weapon upgrades']['Inscriptions'])
+			If $lootComponentList['Weapon upgrades']['Inscriptions'][$inscriptionName] = True Then
+				If StringInStr($modstruct, $inscriptionName) > 0 Then
+					Info('[SAFETY] Not selling item with valuable inscription: ' & $inscriptionName)
 					Return True
+				EndIf
+			EndIf
+		Next
+	EndIf
+
+	; Check runes/insignias for armor
+	If isArmorSalvageItem($item) And $protectRunes And IsMap($lootComponentList) And IsMap($lootComponentList['Armor upgrades']) Then
+		Local $classes[11] = ['All', 'Assassin', 'Dervish', 'Elementalist', 'Mesmer', 'Monk', 'Necromancer', 'Paragon', 'Ranger', 'Ritualist', 'Warrior']
+		For $i = 0 To UBound($classes) - 1
+			Local $class = $classes[$i]
+			If IsMap($lootComponentList['Armor upgrades'][$class]) Then
+				If IsMap($lootComponentList['Armor upgrades'][$class]['Insignias']) Then
+					For $insigniaName In MapKeys($lootComponentList['Armor upgrades'][$class]['Insignias'])
+						If $lootComponentList['Armor upgrades'][$class]['Insignias'][$insigniaName] = True Then
+							If StringInStr($modstruct, $insigniaName) > 0 Then
+								Info('[SAFETY] Not selling item with valuable insignia: ' & $insigniaName)
+								Return True
+							EndIf
+						EndIf
+					Next
+				EndIf
+				If IsMap($lootComponentList['Armor upgrades'][$class]['Runes']) Then
+					For $runeName In MapKeys($lootComponentList['Armor upgrades'][$class]['Runes'])
+						If $lootComponentList['Armor upgrades'][$class]['Runes'][$runeName] = True Then
+							If StringInStr($modstruct, $runeName) > 0 Then
+								Info('[SAFETY] Not selling item with valuable rune: ' & $runeName)
+								Return True
+							EndIf
+						EndIf
+					Next
 				EndIf
 			EndIf
 		Next
@@ -1116,10 +1135,38 @@ Func DefaultShouldSellItem($item)
 	EndIf
 
 	; Never sell req 9 or lower weapons (any attribute) if protection is enabled
-	Local $protectQ9 = GUICtrlRead($SellQ9Checkbox) = $GUI_CHECKED
+	Local $protectQ9 = GUICtrlRead($GUI_Checkbox_ProtectQ9) = $GUI_CHECKED
 	If IsWeapon($item) And $protectQ9 And GetItemReq($item) <= 9 Then
 		Info('[SAFETY] Not selling req9 or lower weapon (req=' & GetItemReq($item) & ')')
 		Return False
+	EndIf
+
+	; Never sell keys if protection is enabled
+	Local $protectKeys = GUICtrlRead($GUI_Checkbox_ProtectKeys) = $GUI_CHECKED
+	Local $itemID = DllStructGetData($item, 'ModelID')
+	If $protectKeys And IsKey($itemID) Then
+		Info('[SAFETY] Not selling key item')
+		Return False
+	EndIf
+
+	; Never sell scrolls if protection is enabled
+	Local $protectScrolls = GUICtrlRead($GUI_Checkbox_ProtectScrolls) = $GUI_CHECKED
+	If $protectScrolls Then
+		If IsBlueScroll($itemID) Or IsGoldScroll($itemID) Or $itemID == $ID_UW_Scroll Or $itemID == $ID_FoW_Scroll Then
+			Info('[SAFETY] Not selling scroll item')
+			Return False
+		EndIf
+	EndIf
+
+	; Never sell mods, inscriptions, runes if protection is enabled
+	Local $protectMods = GUICtrlRead($GUI_Checkbox_ProtectMods) = $GUI_CHECKED
+	Local $protectInscriptions = GUICtrlRead($GUI_Checkbox_ProtectInscriptions) = $GUI_CHECKED
+	Local $protectRunes = GUICtrlRead($GUI_Checkbox_ProtectRunes) = $GUI_CHECKED
+	If $protectMods Or $protectInscriptions Or $protectRunes Then
+		If HasAnyValuableUpgrade($item, 0) Then
+			Info('[SAFETY] Not selling item with protected mod/inscription/rune')
+			Return False
+		EndIf
 	EndIf
 
 	If $rarity == $RARITY_Green Then Return False

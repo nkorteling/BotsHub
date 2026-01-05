@@ -28,10 +28,9 @@ Opt('MustDeclareVars', 1)
 Global Const $WS_Timeout = 120000
 
 ; ==== Constants ====
-Global Const $WS_Skillbar = 'OACjAqiMJSXT+glTfTRbVTMTUPA'
+Global Const $WS_Skillbar = 'OAejAqiMJSXT+glTfTRbVTrgUPA'
 Global Const $WS_Hero_Skillbar = 'OQCiYyo8sj5xm4bMAAAAAAAA'
 Global Const $WS_FarmInformations = 'For best results, have :'
-	& '- The Missing Daughter quest not completed'
 ; Average duration ~ 3m ~ First run is 3m20s with setup
 Global Const $WINGSTORM_FARM_DURATION = (3 * 60 + 10) * 1000
 
@@ -42,7 +41,7 @@ Global Const $WS_BloodSong	        = 3
 Global Const $WS_Pain		        = 4
 Global Const $WS_Anguish	        = 5
 Global Const $WS_PainfulBond	    = 6
-Global Const $WS_SpiritSiphon		= 7
+Global Const $WS_ShadowSanctuary  	= 7
 Global Const $WS_FeastOfSouls	    = 8
 
 ; Hero Build 4
@@ -60,15 +59,33 @@ Func WingStormFarm($STATUS)
 	If Not $WS_FARM_SETUP Then SetupWingStormFarm()
 	If $STATUS <> 'RUNNING' Then Return $PAUSE
 
-	GoToDrazachThicket()
+	WS_GoToDrazachThicket()
+
 	Local $result = WingStormFarmLoop()
+
 	ReturnBackToOutpost($ID_The_Eternal_Grove)
 	Return $result
 EndFunc
 
+Func SetupWingStormFarm()
+    Info('Setting up Wingstorm farm')
+
+    Local $setupTeam = MsgBox(4, "Setup Team", "Do you want to setup the team (add heroes and load builds)?")
+	If $setupTeam = 6 Then ; Yes
+		WS_SetupTeam()
+	EndIf
+
+	Local $setupTeam = MsgBox(4, "Rezone", "Do you need to rezone?")
+	If $setupTeam = 6 Then ; Yes
+		WS_DrazachRezone()
+	EndIf
+
+    $WS_FARM_SETUP = True
+EndFunc
+
 
 ;~ WingStorm farm team setup
-Func SetupTeamWingStormFarm()
+Func WS_SetupTeam()
 	
 	Info('Setting up team')
 	Sleep(500)
@@ -78,7 +95,7 @@ Func SetupTeamWingStormFarm()
 	AddHero($ID_General_Morgahn)
 	Sleep(1000)
 	If GetPartySize() <> 2 Then
-		Warn('Could not set up party correctly. Team size different than 8')
+		Warn('Could not set up party correctly. Team size different than 2')
 	EndIf
 
 	Info('Loading Character skillbar')
@@ -86,62 +103,166 @@ Func SetupTeamWingStormFarm()
 	Info('Loading Hero skillbars')
 	LoadSkillTemplate($WS_Hero_Skillbar, 1)
 
-
 	Sleep(250)
 	DisableAllHeroSkills(1)
-	EnableHeroSkillSlot($ID_General_Morgahn, $WS_FallBack)
-	EnableHeroSkillSlot($ID_General_Morgahn, $WS_Incoming)
+    Sleep(500)
+	EnableHeroSkillSlot($Hero_WS_GeneralMorgahn, $WS_FallBack)
+	EnableHeroSkillSlot($Hero_WS_GeneralMorgahn, $WS_Incoming)
 	Sleep(500)
 
 EndFunc
 
-Func GoToDrazachThicket()
+Func WS_GoToDrazachThicket()
     Info('Traveling to Drazach Thicket')
-    MoveTo(-2120, 12600)
-    MoveTo(-6101, 14303)
+    MoveTo(-6401, 14503)
     WaitMapLoading($ID_Drazach_Thicket, 10000, 1000)
 EndFunc
 
-Func DrazachRezone()
+Func WS_DrazachRezone()
     Info('Rezoning Drazach Thicket')
-    GoToDrazachThicket()
-    MoveTo(-3403, -16256)
+    MoveTo(-2120, 12600)
+    WS_GoToDrazachThicket()
+    MoveTo(-3004, -16256)
     WaitMapLoading($ID_The_Eternal_Grove, 10000, 1000)
 EndFunc
 
+Func WingStormFarmLoop()
+    Info('Starting Wingstorm farm loop')
+    Local $farmStartTime = TimerInit()
+
+    Local $moveResult = MoveToArea()
+    If $moveResult <> $SUCCESS Then
+        Warn('Error moving to Wingstorm area, aborting farm loop')
+        Return $FAIL
+    EndIf
+
+    Info('Wingstorm farm loop completed')
+    Return $SUCCESS
+EndFunc
+
 Func MoveToArea()
-    Local Const $WS_Run_Path = [ _
-        [-3904, -16110], _
-        [-8503, -15141], _
-        [-8551, -13780], _
-        [-7602, -12960], _
-        [-6880, -12576], _
-    ]
-    Local Const $WS_Solo_Path = [ _
-        [-5852, -12506], _
-        [-4858, -11407], _
-        [-5034, -10906], _
-        [-5428, -8922], _
-    ]
-
     Info('Moving to Wingstorm area')
-    For $i = 0 To UBound($WS_Run_Path) - 1
-        MoveTo($WS_Run_Path[$i][0], $WS_Run_Path[$i][1])
-    Next
+    MoveTo(-3904, -16110)
+    MoveTo(-8503, -15141)
+    MoveTo(-8551, -13780)
+    MoveTo(-7602, -12960)
+    MoveTo(-6880, -12576)
+    Sleep (1000)
 
-    UseHeroSkillSlot($ID_General_Morgahn, $WS_EnduringHarmony, GetMyAgent())
+    UseHeroSkill($Hero_WS_GeneralMorgahn, $WS_EnduringHarmony, GetMyAgent())
     Sleep(1000)
-    UseHeroSkillSlot($ID_General_Morgahn, $WS_MakeHaste, GetMyAgent())
+    UseHeroSkill($Hero_WS_GeneralMorgahn, $WS_MakeHaste, GetMyAgent())
     CommandAll(-5359, -16369)
 
-    For $i = 0 To UBound($WS_Solo_Path) - 1
-        MoveTo($WS_Solo_Path[$i][0], $WS_Solo_Path[$i][1])
-    Next
+    MoveTo(-5852, -12506)
+    MoveTo(-4858, -11407)
+    MoveTo(-5034, -10906)
+    MoveTo(-5341, -8943)
+    MoveTo(-5480, -7935)
+    MoveTo(-5341, -8943)
+    Sleep(4000)
 
-    Info('Waiting for keypress to restart...')
-    While Not _IsPressed('j') ; 0D is the virtual-key code for Enter
-        Sleep(100)
-    WEnd
-    Return $SUCCES
+    Info('Arrived at Wingstorm area')
 
+    ; Wait until player is at least 90% HP
+    Local $lifeRatio = DllStructGetData(GetMyAgent(), 'HP')
+    If $lifeRatio < 0.9 Then
+		Sleep(4000)
+    EndIf   
+
+    UseSkillEx($WS_SignetOfSpirits)
+    Sleep(1000)
+    UseSkillEx($WS_Vampirism)
+    Sleep(750)
+    UseSkillEx($WS_BloodSong)
+    Sleep(750)
+    UseSkillEx($WS_Pain)
+    Sleep(750)
+    UseSkillEx($WS_Anguish)
+    Sleep(750)
+
+    CheckForFoes()
+    
+    Local $lifeRatio = DllStructGetData(GetMyAgent(), 'HP')
+    If $lifeRatio < 0.9 Then
+		Sleep(4000)
+    EndIf
+    
+    Sleep(1000)
+    
+    CheckForFoes()
+
+    Local $boss = GetNearestBossFoe()
+    UseSkillEx($WS_PainfulBond, $boss)
+    Sleep(1000)
+    MoveTo(-5240, -8943)
+    UseSkillEx($WS_ShadowSanctuary)
+    
+    Sleep(6000)
+
+    If Not IsPlayerAlive() Then
+        Warn('Player died during Wingstorm event')
+        Return $FAIL
+    EndIf
+
+    UseSkillEx($WS_FeastOfSouls)
+    UseSkillEx($WS_ShadowSanctuary)
+    Sleep(5000)
+
+    Info('Boss defeated, moving to loot area')
+    
+
+    ; Loot items in the area
+    Local $item = GetNearestItemToAgent(GetMyAgent())
+    If $item <> 0 Then
+        MoveTo(DllStructGetData($item, 'X'), DllStructGetData($item, 'Y'))
+        PickUpItems()
+        Sleep(1000)
+    EndIf
+
+    If Not IsPlayerAlive() Then
+        Warn('Player died during looting')
+        Return $FAIL
+    EndIf
+
+    Return $SUCCESS
+
+EndFunc
+
+Func CheckForFoes()
+    If CountFoesInRangeOfAgent(GetMyAgent(), $RANGE_AREA) > 0 Then
+        Info('Foes already present in the area, skipping boss search')
+        UseSkillEx($WS_PainfulBond, GetNearestEnemyToAgent(GetMyAgent()))
+        While CountFoesInRangeOfAgent(GetMyAgent(), $RANGE_AREA) > 0
+            Sleep(2000) ; Wait for foes to be defeated
+            If Not IsPlayerAlive() Then
+                Warn('Player died during Wingstorm event')
+            Return $FAIL
+            EndIf
+        WEnd
+        Info('Foes defeated, proceeding to loot')
+        PickUpItems()
+        Sleep(1000)
+        ; Wait until player is at least 90% HP
+        Local $lifeRatio = DllStructGetData(GetMyAgent(), 'HP')
+        If $lifeRatio < 0.9 Then
+            Sleep(4000)
+        EndIf   
+
+        While Not IsRecharged($WS_Anguish)
+            Sleep(500)
+        WEnd
+
+        UseSkillEx($WS_SignetOfSpirits)
+        Sleep(1000)
+        UseSkillEx($WS_Vampirism)
+        Sleep(750)
+        UseSkillEx($WS_BloodSong)
+        Sleep(750)
+        UseSkillEx($WS_Pain)
+        Sleep(750)
+        UseSkillEx($WS_Anguish)
+        Sleep(750)
+        UseSkillEx($WS_ShadowSanctuary)
+    EndIf
 EndFunc

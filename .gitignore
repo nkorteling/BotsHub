@@ -4,4 +4,6 @@ conf/characters/*
 conf/loot/*
 !conf/characters/Default Configuration.json
 !conf/loot/upgrade_components.json
-.idea/
+src/Farm-WingStorm.au3
+src/Farm-HoldingsOfChokhin.au3
+src/Farm-Skree.au3
