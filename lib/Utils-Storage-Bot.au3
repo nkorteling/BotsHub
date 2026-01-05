@@ -1134,11 +1134,32 @@ Func DefaultShouldSellItem($item)
 		Return False
 	EndIf
 
-	; Never sell req 9 or lower weapons (any attribute) if protection is enabled
+	; Never sell req 9 or lower weapons (attribute-based) if protection is enabled and attribute is checked
 	Local $protectQ9 = GUICtrlRead($GUI_Checkbox_ProtectQ9) = $GUI_CHECKED
 	If IsWeapon($item) And $protectQ9 And GetItemReq($item) <= 9 Then
-		Info('[SAFETY] Not selling req9 or lower weapon (req=' & GetItemReq($item) & ')')
-		Return False
+		; Get the attribute of the item
+		Local $attr = GetItemAttribute($item)
+		; $GW_ATTRIBUTE_LIST and $GUI_Q9AttributeCheckboxes are declared in BotsHub.au3 and should be global
+		Local $attrIndex = -1
+		For $i = 0 To UBound($GW_ATTRIBUTE_LIST) - 1
+			If $GW_ATTRIBUTE_LIST[$i] = $attr Then
+				$attrIndex = $i
+				ExitLoop
+			EndIf
+		Next
+		; If attribute is found and its checkbox is checked, protect; otherwise, allow selling
+		If $attrIndex <> -1 Then
+			If GUICtrlRead($GUI_Q9AttributeCheckboxes[$attrIndex]) = $GUI_CHECKED Then
+				Info('[SAFETY] Not selling req9 or lower weapon (req=' & GetItemReq($item) & ', attr=' & $attr & ')')
+				Return False
+			Else
+				Info('[Q9 ATTR FILTER] Selling req9 or lower weapon (req=' & GetItemReq($item) & ', attr=' & $attr & ') because attribute filter is not checked')
+			EndIf
+		Else
+			; If attribute not found, default to protecting (fail safe)
+			Info('[SAFETY] Not selling req9 or lower weapon (req=' & GetItemReq($item) & ', attr=UNKNOWN) [attribute not found in filter list]')
+			Return False
+		EndIf
 	EndIf
 
 	; Never sell keys if protection is enabled

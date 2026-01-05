@@ -118,6 +118,7 @@ Global Const $ID_Mount_Qinkai				= 200
 Global Const $ID_Silent_Surf				= 203
 Global Const $ID_Ferndale					= 210
 Global Const $ID_Pongmei_Valley				= 211
+Global Const $ID_Maatu_Keep					= 283
 Global Const $ID_Minister_Chos_Estate		= 214
 Global Const $ID_Nahpui_Quarter				= 216
 Global Const $ID_Boreas_Seabed				= 219

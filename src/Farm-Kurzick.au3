@@ -36,7 +36,7 @@ Global Const $KurzickFactionInformations = 'For best results, have :' & @CRLF _
 ; Average duration ~ 40m
 Global Const $KURZICKS_FARM_DURATION = 41 * 60 * 1000
 
-Global $DonatePoints = True
+Global $DonatePoints = False
 
 ;~ Main loop for the kurzick faction farm
 Func KurzickFactionFarm($STATUS)
