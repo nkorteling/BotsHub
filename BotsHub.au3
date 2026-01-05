@@ -126,6 +126,10 @@ Global $INVENTORY_SPACE_NEEDED = 5
 
 Global $AVAILABLE_FARMS = 'Boreal|Corsairs|Dragon Moss|Eden Iris|Feathers|Follow|FoW|Froggy|Gemstone|Gemstone Stygian|Jade Brotherhood|Kournans|Kurzick|Lightbringer|Lightbringer 2|Luxon|Mantids|Ministerial Commendations|Nexus Challenge|Norn|OmniFarm|Pongmei|Raptors|SoO|SpiritSlaves|Sunspear Armor|Tasca|Vaettirs|Vanguard|Voltaic|War Supply Keiran|Storage|Tests|TestSuite|Dynamic|Skree|Holdings Of Chokhin|Wingstorm'
 Global $AVAILABLE_DISTRICTS = '|Random|America|China|English|French|German|International|Italian|Japan|Korea|Polish|Russian|Spanish'
+
+; Q9 Attribute Filter Arrays
+Global $GW_ATTRIBUTE_LIST[12]
+Global $GUI_Q9AttributeCheckboxes[12]
 #EndRegion Variables
 
 
@@ -134,7 +138,8 @@ Opt('GUIOnEventMode', 1)
 Opt('GUICloseOnESC', 0)
 Opt('MustDeclareVars', 1)
 
-Global $GUI_GWBotHub, $GUI_Tabs_Parent, $GUI_Tab_Main, $GUI_Tab_RunOptions, $GUI_Tab_LootOptions, $GUI_Tab_FarmInfos, $GUI_Tab_LootComponents
+Global $GUI_GWBotHub, $GUI_Tabs_Parent, $GUI_Tab_Main, $GUI_Tab_RunOptions, $GUI_Tab_LootOptions, $GUI_Tab_FarmInfos, $GUI_Tab_LootComponents, $GUI_Tab_SalesFilters
+Global $GUI_Group_SalesFilters, $GUI_Label_Q9Attributes
 Global $GUI_Console, $GUI_Combo_CharacterChoice, $GUI_Combo_FarmChoice, $GUI_StartButton, $GUI_FarmProgress
 Global $GUI_Input_DynamicExecution, $GUI_Button_DynamicExecution, $GUI_Label_BagsCount, $GUI_Input_BagsCount, $GUI_Label_TravelDistrict, $GUI_Combo_DistrictChoice, $GUI_Icon_SaveConfig, $GUI_Combo_ConfigChoice
 
@@ -316,25 +321,6 @@ Func createGUI()
 	$GUI_Checkbox_SellItems = GUICtrlCreateCheckbox('Sell Items', 31, 224, 156, 20)
 	GUICtrlSetOnEvent($GUI_Checkbox_SellItems, "_OnSellItemsCheckboxChange")
 
-	; Protect group (left column)
-	$GUI_Checkbox_ProtectQ9 = GUICtrlCreateCheckbox('Protect Q9- Weapons', 31, 254, 156, 20)
-	$GUI_Checkbox_ProtectGreens = GUICtrlCreateCheckbox('Protect Green Items', 31, 274, 156, 20)
-	$GUI_Checkbox_ProtectKeys = GUICtrlCreateCheckbox('Protect Keys', 31, 294, 156, 20)
-	$GUI_Checkbox_ProtectScrolls = GUICtrlCreateCheckbox('Protect Scrolls', 31, 314, 156, 20)
-
-	; Protect group (right column)
-	$GUI_Checkbox_ProtectMods = GUICtrlCreateCheckbox('Protect Mods', 170, 254, 120, 20)
-	$GUI_Checkbox_ProtectInscriptions = GUICtrlCreateCheckbox('Protect Inscriptions', 170, 274, 120, 20)
-	$GUI_Checkbox_ProtectRunes = GUICtrlCreateCheckbox('Protect Runes', 170, 294, 120, 20)
-	; Check all protect checkboxes by default
-	GUICtrlSetState($GUI_Checkbox_ProtectQ9, $GUI_CHECKED)
-	GUICtrlSetState($GUI_Checkbox_ProtectGreens, $GUI_CHECKED)
-	GUICtrlSetState($GUI_Checkbox_ProtectKeys, $GUI_CHECKED)
-	GUICtrlSetState($GUI_Checkbox_ProtectScrolls, $GUI_CHECKED)
-	GUICtrlSetState($GUI_Checkbox_ProtectMods, $GUI_CHECKED)
-	GUICtrlSetState($GUI_Checkbox_ProtectInscriptions, $GUI_CHECKED)
-	GUICtrlSetState($GUI_Checkbox_ProtectRunes, $GUI_CHECKED)
-
 	; Other options at the bottom
 	$GUI_Checkbox_BuyEctoplasm = GUICtrlCreateCheckbox('Buy ectoplasm', 31, 354, 156, 20)
 	$GUI_Checkbox_StoreTheRest = GUICtrlCreateCheckbox('Store the rest', 31, 374, 100, 20)
@@ -356,6 +342,44 @@ Func createGUI()
 	$GUI_Button_DynamicExecution = GUICtrlCreateButton('Run', 490, 364, 75, 20)
 	GUICtrlSetBkColor($GUI_Button_DynamicExecution, $GUI_BLUE_COLOR)
 	GUICtrlSetOnEvent($GUI_Button_DynamicExecution, 'GuiButtonHandler')
+	GUICtrlCreateGroup('', -99, -99, 1, 1)
+	GUICtrlCreateTabItem('')
+
+	$GUI_Tab_SalesFilters = GUICtrlCreateTabItem('Sales Filters')
+	$GUI_Group_SalesFilters = GUICtrlCreateGroup('Item Protection', 21, 39, 630, 420)
+	$GUI_Checkbox_ProtectQ9 = GUICtrlCreateCheckbox('Protect Q9- Weapons (all)', 31, 64, 180, 20)
+	$GUI_Checkbox_ProtectGreens = GUICtrlCreateCheckbox('Protect Green Items', 31, 94, 180, 20)
+	$GUI_Checkbox_ProtectKeys = GUICtrlCreateCheckbox('Protect Keys', 31, 124, 180, 20)
+	$GUI_Checkbox_ProtectScrolls = GUICtrlCreateCheckbox('Protect Scrolls', 31, 154, 180, 20)
+	$GUI_Checkbox_ProtectMods = GUICtrlCreateCheckbox('Protect Mods', 250, 64, 180, 20)
+	$GUI_Checkbox_ProtectInscriptions = GUICtrlCreateCheckbox('Protect Inscriptions', 250, 94, 180, 20)
+	$GUI_Checkbox_ProtectRunes = GUICtrlCreateCheckbox('Protect Runes', 250, 124, 180, 20)
+	GUICtrlSetState($GUI_Checkbox_ProtectQ9, $GUI_CHECKED)
+	GUICtrlSetState($GUI_Checkbox_ProtectGreens, $GUI_CHECKED)
+	GUICtrlSetState($GUI_Checkbox_ProtectKeys, $GUI_CHECKED)
+	GUICtrlSetState($GUI_Checkbox_ProtectScrolls, $GUI_CHECKED)
+	GUICtrlSetState($GUI_Checkbox_ProtectMods, $GUI_CHECKED)
+	GUICtrlSetState($GUI_Checkbox_ProtectInscriptions, $GUI_CHECKED)
+	GUICtrlSetState($GUI_Checkbox_ProtectRunes, $GUI_CHECKED)
+	GUICtrlSetOnEvent($GUI_Checkbox_ProtectQ9, "_OnSellItemsCheckboxChange")
+
+	$GUI_Label_Q9Attributes = GUICtrlCreateLabel('Q9 Attribute Filters:', 31, 200, 180, 20)
+	$GW_ATTRIBUTE_LIST[0] = 'Axe'
+	$GW_ATTRIBUTE_LIST[1] = 'Sword'
+	$GW_ATTRIBUTE_LIST[2] = 'Dagger'
+	$GW_ATTRIBUTE_LIST[3] = 'Hammer'
+	$GW_ATTRIBUTE_LIST[4] = 'Bow'
+	$GW_ATTRIBUTE_LIST[5] = 'Scythe'
+	$GW_ATTRIBUTE_LIST[6] = 'Spear'
+	$GW_ATTRIBUTE_LIST[7] = 'Staff'
+	$GW_ATTRIBUTE_LIST[8] = 'Wand'
+	$GW_ATTRIBUTE_LIST[9] = 'Offhand'
+	$GW_ATTRIBUTE_LIST[10] = 'Shield'
+	$GW_ATTRIBUTE_LIST[11] = 'Other'
+	For $i = 0 To 11
+		$GUI_Q9AttributeCheckboxes[$i] = GUICtrlCreateCheckbox($GW_ATTRIBUTE_LIST[$i], 31 + Mod($i, 4) * 150, 230 + Int($i / 4) * 30, 140, 20)
+		GUICtrlSetState($GUI_Q9AttributeCheckboxes[$i], $GUI_CHECKED)
+	Next
 	GUICtrlCreateGroup('', -99, -99, 1, 1)
 	GUICtrlCreateTabItem('')
 
@@ -469,9 +493,11 @@ Func _GUICtrlTab_SetBkColor($gui, $parentTab, $color)
 EndFunc
 
 ; Handler to enable/disable protect checkboxes based on Sell Items
+
 Func _OnSellItemsCheckboxChange()
-	Local $checked = BitAND(GUICtrlRead($GUI_Checkbox_SellItems), $GUI_CHECKED)
-	Local $state = $checked ? $GUI_ENABLE : $GUI_DISABLE
+	Local $sellChecked = BitAND(GUICtrlRead($GUI_Checkbox_SellItems), $GUI_CHECKED)
+	Local $protectQ9Checked = BitAND(GUICtrlRead($GUI_Checkbox_ProtectQ9), $GUI_CHECKED)
+	Local $state = $sellChecked ? $GUI_ENABLE : $GUI_DISABLE
 	GUICtrlSetState($GUI_Checkbox_ProtectQ9, $state)
 	GUICtrlSetState($GUI_Checkbox_ProtectGreens, $state)
 	GUICtrlSetState($GUI_Checkbox_ProtectKeys, $state)
@@ -479,6 +505,13 @@ Func _OnSellItemsCheckboxChange()
 	GUICtrlSetState($GUI_Checkbox_ProtectMods, $state)
 	GUICtrlSetState($GUI_Checkbox_ProtectInscriptions, $state)
 	GUICtrlSetState($GUI_Checkbox_ProtectRunes, $state)
+	GUICtrlSetState($GUI_Group_SalesFilters, $state)
+	GUICtrlSetState($GUI_Label_Q9Attributes, $state)
+	; Q9 attribute checkboxes: enabled only if Sell Items and Protect Q9 are both checked
+	Local $q9State = ($sellChecked And $protectQ9Checked) ? $GUI_ENABLE : $GUI_DISABLE
+	For $i = 0 To UBound($GUI_Q9AttributeCheckboxes) - 1
+		GUICtrlSetState($GUI_Q9AttributeCheckboxes[$i], $q9State)
+	Next
 EndFunc
 
 
