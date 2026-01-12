@@ -971,7 +971,7 @@ Func ShouldKeepWeapon($item)
 	; Inscribable are kept only if : 1) rare skin and q9 2) low req of a good type
 	If IsInscribable($item) Then
 		If IsLowReqMaxDamage($item) And $lowReqValuableWeaponTypesMap[DllStructGetData($item, 'type')] <> Null Then Return True
-		If GetItemReq($item) == 9 And $Map_RareWeapons[$itemID] <> Null Then Return True
+		If GetItemReq($item) == 9 And $Map_RareWeapons[$itemID] <> Null And $GUI_Checkbox_ProtectQ9 Then Return True
 		Return False
 	; OS ... it's more complicated
 	Else
