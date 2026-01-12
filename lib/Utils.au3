@@ -23,6 +23,7 @@
 #include 'GWA2_ID.au3'
 #include 'GWA2.au3'
 #include 'Utils-Debugger.au3'
+#include 'Utils.au3'
 
 Opt('MustDeclareVars', 1)
 
