@@ -27,10 +27,13 @@
 ;~ Main method to run the test suite
 Func RunTestSuite($STATUS)
 	Global $captureCoords = False
+	Global $clearCoords = False
+	Global $groupCount = 0
 
 	HotKeySet("j", "CapturePosition")
+	HotKeySet("o", "ClearPosition")
 	
-	Info('Coordinate Logger Active - Press J to log position, ESC to exit')
+	Info('Coordinate Logger Active - Press J to log position, O to Clear Position, ESC to exit')
 	
 	While True
 		Sleep(100)
@@ -42,12 +45,37 @@ Func RunTestSuite($STATUS)
 			Info("Current Map ID: " & GetMapID())
 			$captureCoords = False
 		EndIf
+		If $clearCoords Then
+			$groupCount += 1
+
+			Local $me = GetMyAgent()
+			Local $closestEnemy = GetNearestEnemyToAgent($me)
+			If IsDllStruct($closestEnemy) Then
+				Local $modelID = DllStructGetData($closestEnemy, 'ModelID')
+				Local $name = GetAgentName($closestEnemy)
+			EndIf
+
+			Local $groupName = $name & " Group " & $groupCount
+			Local $x = DllStructGetData($me, 'X')
+			Local $y = DllStructGetData($me, 'Y')
+			Local $foes[1][4] = [[ $x, $y, $groupName, $AGGRO_RANGE ]]
+			Info($name & " group cleared.")
+			Info("MoveAggroAndKillGroups(" & $x & ", " & $y & ", " & $groupName & ", " & $AGGRO_RANGE & ")")
+			MoveAggroAndKillGroups($foes, 1, UBound($foes))
+			$clearCoords = False
+		EndIf
+
 	WEnd
 	
 	HotKeySet("j")
+	HotKeySet("o")
 	Return $SUCCESS
 EndFunc
 
 Func CapturePosition()
 	$captureCoords = True
+EndFunc
+
+Func ClearPosition()
+    $clearCoords = True
 EndFunc

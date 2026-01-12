@@ -163,7 +163,7 @@ Func SetupTeamMinisterialCommendationsFarm()
 	AddHero($ID_mesmer_mercenary_hero)
 	AddHero($ID_ritualist_mercenary_hero)
 	AddHero($ID_Xandra)
-	AddHero($ID_Olias)
+	AddHero($ID_Master_Of_Whispers)
 	Sleep(1000)
 	If GetPartySize() <> 8 Then
 		Warn('Could not set up party correctly. Team size different than 8')

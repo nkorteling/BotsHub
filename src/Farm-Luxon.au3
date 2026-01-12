@@ -36,7 +36,7 @@ Global Const $LuxonFactionInformations = 'For best results, have :' & @CRLF _
 Global Const $LUXONS_FARM_DURATION = 20 * 60 * 1000
 Global Const $ID_unknown_outpost_deposit_points = 193
 
-Global $DonatePoints = True
+Global $DonatePoints = False
 
 
 ;~ Main loop for the luxon faction farm

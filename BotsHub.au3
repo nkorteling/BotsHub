@@ -81,6 +81,9 @@
 #include 'src/Farm-Skree.au3'
 #include 'src/Farm-HoldingsOfChokhin.au3'
 #include 'src/Farm-Wingstorm.au3'
+#include 'src/Farm-VQ-Arborstone.au3'
+#include 'src/Farm-Skale.au3'
+#include 'src/Farm-Drakeflesh.au3'
 
 #include 'lib/JSON.au3'
 #EndRegion Includes
@@ -124,7 +127,7 @@ Global $DISTRICT_NAME = 'Random'
 Global $BAGS_COUNT = 5
 Global $INVENTORY_SPACE_NEEDED = 5
 
-Global $AVAILABLE_FARMS = 'Boreal|Corsairs|Dragon Moss|Eden Iris|Feathers|Follow|FoW|Froggy|Gemstone|Gemstone Stygian|Jade Brotherhood|Kournans|Kurzick|Lightbringer|Lightbringer 2|Luxon|Mantids|Ministerial Commendations|Nexus Challenge|Norn|OmniFarm|Pongmei|Raptors|SoO|SpiritSlaves|Sunspear Armor|Tasca|Vaettirs|Vanguard|Voltaic|War Supply Keiran|Storage|Tests|TestSuite|Dynamic|Skree|Holdings Of Chokhin|Wingstorm'
+Global $AVAILABLE_FARMS = 'Boreal|Corsairs|Dragon Moss|Eden Iris|Feathers|Follow|FoW|Froggy|Gemstone|Gemstone Stygian|Jade Brotherhood|Kournans|Kurzick|Lightbringer|Lightbringer 2|Luxon|Mantids|Ministerial Commendations|Nexus Challenge|Norn|OmniFarm|Pongmei|Raptors|SoO|SpiritSlaves|Sunspear Armor|Tasca|Vaettirs|Vanguard|Voltaic|War Supply Keiran|Storage|Tests|TestSuite|Dynamic|Skree|Holdings Of Chokhin|Wingstorm|VQ Arborstone|Skale|Drakes'
 Global $AVAILABLE_DISTRICTS = '|Random|America|China|English|French|German|International|Italian|Japan|Korea|Polish|Russian|Spanish'
 
 ; Q9 Attribute Filter Arrays
@@ -1024,6 +1027,15 @@ Func RunFarmLoop($Farm)
 		Case 'Wingstorm'
 			$INVENTORY_SPACE_NEEDED = 2
 			$result = WingstormFarm($STATUS)
+		Case 'VQ Arborstone'
+			$INVENTORY_SPACE_NEEDED = 5
+			$result = VanquishArborstone($STATUS)
+		Case 'Skale'
+			$INVENTORY_SPACE_NEEDED = 5
+			$result = SkaleFinFarm($STATUS)
+		Case 'Drakeflesh'
+			$INVENTORY_SPACE_NEEDED = 5
+			$result = DrakefleshFarm($STATUS)
 		Case Else
 			MsgBox(0, 'Error', 'This farm does not exist.')
 	EndSwitch
@@ -1162,6 +1174,16 @@ Func UpdateFarmDescription($Farm)
 			Return
 		Case 'Storage'
 			Return
+		Case 'Skree'
+			GUICtrlSetData($GUI_Edit_CharacterBuild, $RASkreeFarmerSkillbar)
+			GUICtrlSetData($GUI_Label_FarmInformations, $SkreeFarmInformations)
+		Case 'Holdings Of Chokhin'
+			GUICtrlSetData($GUI_Edit_CharacterBuild, $HOC_Farmer_Skillbar)
+			GUICtrlSetData($GUI_Label_FarmInformations, $HOC_Farm_Informations)
+		Case 'Wingstorm'
+			GUICtrlSetData($GUI_Label_FarmInformations, $Wingstorm_Farm_Informations)
+		Case 'VQ Arborstone'
+			GUICtrlSetData($GUI_Label_FarmInformations, $VQ_Arborstone_Farm_Informations)
 		Case Else
 			Return
 	EndSwitch
