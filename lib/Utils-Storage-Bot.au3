@@ -591,6 +591,8 @@ Func SellItemsToMerchant($shouldSellItem = DefaultShouldSellItem, $dryRun = Fals
 					If Not $dryRun Then
 						SellItem($item, DllStructGetData($item, 'Quantity'))
 						RandomSleep(GetPing() + 200)
+					Else
+						Info('Will sell item at ' & $bagIndex & ':' & $i)
 					EndIf
 				Else
 					If $dryRun Then Info('Will not sell item at ' & $bagIndex & ':' & $i)
@@ -908,13 +910,29 @@ Func DefaultShouldSellItem($item)
 	Local $itemID = DllStructGetData($item, 'ModelID')
 	Local $rarity = GetRarity($item)
 
-	If $rarity == $RARITY_Green Then Return False
-	If IsKey($itemID) Then Return True
-	If IsBlueScroll($itemID) Then Return True
-	If IsGoldScroll($itemID) And $itemID <> $ID_UW_Scroll And $itemID <> $ID_FoW_Scroll Then Return True
-	If isArmorSalvageItem($item) Then Return GetIsIdentified($item) And Not ContainsValuableUpgrades($item)
+	If $rarity == $RARITY_Green And $GUI_Checkbox_ProtectGreens Then 
+		Return False
+	EndIf
+
+	If IsKey($itemID) And $GUI_Checkbox_ProtectKeys Then 
+		Return False
+	EndIf
+
+	If IsBlueScroll($itemID) And $GUI_Checkbox_ProtectScrolls Then
+		Return False
+	EndIf
+
+	If IsGoldScroll($itemID) And $GUI_Checkbox_ProtectScrolls Then
+		Return False
+	EndIf
+
+	If isArmorSalvageItem($item) Then 
+		Return GetIsIdentified($item) And Not ContainsValuableUpgrades($item)
+	EndIf
+
 	If IsWeapon($item) Then
-		Return Not ShouldKeepWeapon($item)
+		Local $ShouldKeepInfo = ShouldKeepWeapon($item)
+		Return Not $ShouldKeepInfo
 	EndIf
 	Return False
 EndFunc
@@ -952,30 +970,45 @@ Func ShouldKeepWeapon($item)
 	Local $rarity = GetRarity($item)
 	Local $itemID = DllStructGetData($item, 'ModelID')
 	Local $type = DllStructGetData($item, 'Type')
+	
 	; Keeping equipped items
 	If DllStructGetData($item, 'Equipped') Then Return True
+	
 	; Keeping customized items
 	If DllStructGetData($item, 'Customized') <> 0 Then Return True
+	
 	; Throwing white items
 	If $rarity == $RARITY_White Then Return False
+	
 	; Keeping green items
-	If $rarity == $RARITY_Green Then Return True
+	If $rarity == $RARITY_Green And $GUI_Checkbox_ProtectGreens Then Return True
+	
 	; Keeping unidentified items
 	If Not GetIsIdentified($item) Then Return True
+	
 	; Keeping super-rare items, good in all cases, items (BDS, voltaic, etc)
-	If $Map_UltraRareWeapons[$itemID] <> Null Then Return True
+	If $Map_UltraRareWeapons[$itemID] <> Null Then 
+		Return True
+	EndIf
+	
 	; Keeping items that contain good upgrades
-	If ContainsValuableUpgrades($item) Then Return True
+	If ContainsValuableUpgrades($item) And ($GUI_Checkbox_ProtectMods Or $GUI_Checkbox_ProtectInscriptions) Then
+		Return True
+	EndIf
 	; Throwing items without good damage/energy/armor
 	If Not IsMaxDamageForReq($item) Then Return False
 	; Inscribable are kept only if : 1) rare skin and q9 2) low req of a good type
 	If IsInscribable($item) Then
-		If IsLowReqMaxDamage($item) And $lowReqValuableWeaponTypesMap[DllStructGetData($item, 'type')] <> Null Then Return True
-		If GetItemReq($item) == 9 And $Map_RareWeapons[$itemID] <> Null And $GUI_Checkbox_ProtectQ9 Then Return True
+		If IsLowReqMaxDamage($item) And $lowReqValuableWeaponTypesMap[DllStructGetData($item, 'type')] <> Null Then 
+			Return True
+		EndIf
+			If GetItemReq($item) == 9 And $Map_RareWeapons[$itemID] <> Null And $GUI_Checkbox_ProtectQ9 Then 
+			Return True
+		EndIf
 		Return False
 	; OS ... it's more complicated
 	Else
-		If GetItemReq($item) >= 9 Then
+		If GetItemReq($item) >= 9 And $GUI_Checkbox_ProtectQ9 Then
 			; OS high req are kept only if : 1) perfect mods and good type or good skin 2) rare skin and almost perfect mods
 			If HasPerfectMods($item) And ($Map_RareWeapons[$itemID] <> Null Or $valuableOSWeaponTypesMap[DllStructGetData($item, 'type')] <> Null) Then Return True
 			If $Map_RareWeapons[$itemID] == Null Then Return False
@@ -983,9 +1016,9 @@ Func ShouldKeepWeapon($item)
 			Return False
 		Else
 			; Low req are kept if they have perfect mods, almost perfect mods, or a rare skin with somewhat okay mods
-			If HasPerfectMods($item) Then Return True
-			If HasAlmostPerfectMods($item) Then Return True
-			If $Map_RareWeapons[$itemID] <> Null And HasOkayMods($item) Then Return True
+			If HasPerfectMods($item) And $GUI_Checkbox_ProtectQ9 Then Return True
+			If HasAlmostPerfectMods($item) And $GUI_Checkbox_ProtectQ9 Then Return True
+			If $Map_RareWeapons[$itemID] <> Null And HasOkayMods($item) And $GUI_Checkbox_ProtectQ9 Then Return True
 			Return False
 		EndIf
 	EndIf

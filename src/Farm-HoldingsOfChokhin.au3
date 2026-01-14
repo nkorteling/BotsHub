@@ -49,6 +49,10 @@ Global Const $HOC_FarmInformations = 'For best results, have :' & @CRLF _
 
 Global Const $HOC_FARM_DURATION = 2.5 * 60 * 1000
 
+; ==== Global variables ====
+Global $HOC_ChatStuckTimer = TimerInit()
+Global $HOC_Deadlocked = False
+
 ; Skill numbers declared to make the code WAY more readable (UseSkillEx($HOC_GlyphOfSwiftness) is better than UseSkillEx(1))
 Global Const $HOC_GlyphOfSwiftness	= 1
 Global Const $HOC_ObsidianFlesh			= 2
@@ -358,68 +362,6 @@ Func CheckHOC_FarmResult()
 	Return $SUCCESS
 EndFunc
 
-;~ Move to (X,Y) while staying alive and maintaining buffs during Skree farm
-Func MoveAggroingHOC_Farm($x, $y)
-	Move($x, $y, 0)
-
-	Local $me = GetMyAgent()
-	While IsPlayerAlive() And GetDistanceToPoint($me, $x, $y) > $RANGE_NEARBY
-		If HOC_IsBodyBlocked() Then Return $FAIL
-		RandomSleep(100)
-		Move($x, $y)
-		$me = GetMyAgent()
-	WEnd
-	Return $SUCCESS
-EndFunc
-
-
-;~ Check if bodyblock and if is move randomly until not bodyblocked anymore
-Func HOC_IsBodyBlocked()
-	Local $blocked = 0
-	Local Const $PI = 3.14159
-	Local $angle = 0
-
-	Local $me = GetMyAgent()
-	If DllStructGetData($me, 'HP') < 0.90 Then
-		HOC_SendStuckCommand()
-	EndIf
-
-	While Not IsPlayerMoving()
-		$blocked += 1
-		Debug('Blocked: ' & $blocked)
-		If $blocked > 1 Then
-			$angle += $PI / 4
-		EndIf
-
-		If ($blocked > 4 Or DllStructGetData($me, 'HP') < 0.90) Then
-			HOC_SendStuckCommand()
-		EndIf
-
-		If $blocked > 7 Then
-			Debug('Completely blocked')
-			Return True
-		EndIf
-		Move(DllStructGetData($me, 'X') + 300 * sin($angle), DllStructGetData($me, 'Y') + 300 * cos($angle), 0)
-		RandomSleep(250)
-		$me = GetMyAgent()
-	WEnd
-	Return False
-EndFunc
-
-
-;~ Send /stuck - don't overuse
-Func HOC_SendStuckCommand()
-	; use a timer to avoid spamming /stuck - /stuck is only useful when rubberbanding - there shouldn't be any enemy around the character then
-	If CountFoesInRangeOfAgent(GetMyAgent(), $RANGE_NEARBY) == 0 And TimerDiff($chatStuckTimer) > 10000 Then
-		Warn('Sending /stuck')
-		SendChat('stuck', '/')
-		$chatStuckTimer = TimerInit()
-		RandomSleep(GetPing() + 20)
-		Return True
-	EndIf
-	Return False
-EndFunc
-
 Func HOC_Loot()
 	Local $lootTimer = TimerInit()
 	While TimerDiff($lootTimer) < 30000  ; 30 second timeout
@@ -438,6 +380,62 @@ Func HOC_Loot()
 	WEnd
 EndFunc
 
+;~ Move to destX, destY, while staying alive vs vaettirs
+Func MHoC_MoveAggroing($X, $Y, $random = 150)
+	If IsPlayerDead() Then Return $FAIL
+
+	Local $blockedCount
+	Local $heartOfShadowUsageCount
+	Local $angle
+	Local $stuckTimer = TimerInit()
+
+	Move($X, $Y, $random)
+
+	Local $me = GetMyAgent()
+	Local $target = GetNearestEnemyToAgent($me)
+	While GetDistanceToPoint($me, $X, $Y) > $random * 1.5
+		If IsPlayerDead() Then Return False
+		HoC_StayAlive()
+		$me = GetMyAgent()
+		If Not IsPlayerMoving() Then
+			$blockedCount += 1
+			$me = GetMyAgent()
+			If $blockedCount < 5 Then
+				Move($X, $Y, $random)
+			ElseIf $blockedCount < 10 Then
+				$angle += 40
+				Move(DllStructGetData($me, 'X') + 300 * sin($angle), DllStructGetData($me, 'Y') + 300 * cos($angle))
+			EndIf
+		Else
+			If $blockedCount > 0 Then
+				; use a timer to avoid spamming /stuck
+				If TimerDiff($MeV_ChatStuckTimer) > 3000 Then
+					SendChat('stuck', '/')
+					$MeV_ChatStuckTimer = TimerInit()
+				EndIf
+				$blockedCount = 0
+			EndIf
+
+			; target is far, we probably got stuck
+			If GetDistance($me, $target) > 1100 Then
+				; dont spam
+				If TimerDiff($HOC_ChatStuckTimer) > 3000 Then
+					SendChat('stuck', '/')
+					$HOC_ChatStuckTimer = TimerInit()
+					RandomSleep(GetPing() + 20)
+					; we werent stuck, but target broke aggro. select a new one
+					If GetDistance($me, $target) > 1100 Then
+						$target = GetNearestEnemyToAgent($me)
+					EndIf
+				EndIf
+			EndIf
+		EndIf
+		RandomSleep(100)
+		$me = GetMyAgent()
+	WEnd
+	Return $SUCCESS
+EndFunc
+
 Func Register_HOC_HealAndCureCycle()
 	AdlibRegister('HOC_HealAndCureCycle', 4500)
 EndFunc
@@ -446,14 +444,15 @@ Func Unregister_HOC_HealAndCureCycle()
 	AdlibUnRegister('HOC_HealAndCureCycle')
 EndFunc
 
-Func Register_HOC_AggroCycle()
-	AdlibRegister('HOC_OsidianTimer', 1000)
-	AdlibRegister('HOC_StoneFleshTimer', 1000)
-EndFunc
-
-Func Unregister_HOC_AggroCycle()
-	AdlibUnRegister('HOC_OsidianTimer')
-	AdlibUnRegister('HOC_StoneFleshTimer')
+;~ Wait while staying alive at the same time (like Sleep(..), but without the dying part)
+Func HoC_SleepAndStayAlive($waitingTime)
+	If IsPlayerDead() Then Return
+	Local $timer = TimerInit()
+	While TimerDiff($timer) < $waitingTime
+		RandomSleep(100)
+		If IsPlayerDead() Then Return
+		HoC_StayAlive()
+	WEnd
 EndFunc
 
 ;~ Can be used in other farm bots - has no latency - can be used at most once every 1600ms
@@ -489,95 +488,60 @@ Func HOC_HealAndCureCycle()
 	$adlibBusy = False
 EndFunc
 
-Func HOC_OsidianTimer()
-	;~ If $HOC_ObsidianTimer = 0 Then $HOC_ObsidianTimer = TimerInit()
-	;~ If Not IsPlayerAlive() Then
-	;~ 	Unregister_HOC_AllCycles()
-	;~ 	Return $FAIL
-	;~ EndIf
-	;~ If TimerDiff($HOC_ObsidianTimer) >= 9000 And not $HOC_IsBusy Then
-	;~ 	$HOC_IsBusy = True
-	;~ 	$HOC_ObsidianTimer = TimerInit()
-	;~ 	UseSkillEx($HOC_GlyphOfSwiftness)
-	;~ 	UseSkillEx($HOC_ObsidianFlesh)
-	;~ 	$HOC_IsBusy = False
-	;~ 	Sleep(100)
-	;~ EndIf
-	If $HOC_ObsidianTimer = 0 Then $HOC_ObsidianTimer = TimerInit()
+;~ Use whatever skills you need to keep yourself alive.
+Func HoC_StayAlive()
+	Local $foesNear = False
+	Local $distance
+	Local $me = GetMyAgent()
+	Local $foes = GetFoesInRangeOfAgent(GetMyAgent(), 1200)
+	For $foe In $foes
+		$distance = GetDistance($me, $foe)
+		If $distance < 1200 Then
+			$foesNear = True
+		EndIf
+	Next
 
-	If IsRecharged($HOC_ObsidianFlesh) And Not $HOC_IsBusy Then
-		$HOC_IsBusy = True
-		UseSkillEx($HOC_GlyphOfSwiftness)
-		UseSkillEx($HOC_ObsidianFlesh)
-		$HOC_IsBusy = False
-		$HOC_ObsidianTimer = TimerInit()
-		Sleep(100)
-		If $HOC_SF_Queue Then
-			HOC_StoneFleshTimer()
-			$HOC_SF_Queue = False
-		EndIf
-		If $HOC_Kill_Queue Then
-			HOC_KillEnemies()
-			$HOC_Kill_Queue = False
-		EndIf
-	ElseIf $HOC_IsBusy Then 
-		$HOC_OF_Queue = True
+	If $foesNear And GetEnergy() > 20 Then 
+		HoC_TryUseObsidianFlesh()
 	EndIf
-
+	If $foesNear And GetEnergy() > 20 Then 
+		HoC_TryUseStoneFlesh()
+	EndIf
+	If $foesNear And GetEnergy() > 20 Then 
+		HoC_TryUseObsidianFlesh()
+	EndIf
+	If $foesNear And GetEnergy() > 20 Then 
+		HoC_TryUseStoneFlesh()
+	EndIf
 EndFunc
 
-Func HOC_StoneFleshTimer()
-	;~ If $HOC_StoneFleshTimer = 0 Then $HOC_StoneFleshTimer = TimerInit()
-	;~ If TimerDiff($HOC_StoneFleshTimer) >= 9000 And Not $HOC_IsBusy Then
-	;~ 	$HOC_IsBusy = True
-	;~ 	$HOC_StoneFleshTimer = TimerInit()
-	;~ 	UseSkillEx($HOC_ProtectiveSpirit)
-	;~ 	UseSkillEx($HOC_StoneFleshAura)
-	;~ 	$HOC_IsBusy = False
-	;~ 	Sleep(100)
-	;~ EndIf
-	If $HOC_StoneFleshTimer = 0 Then $HOC_StoneFleshTimer = TimerInit()
+;~ Uses Obsidian Flesh if its recharged
+Func HoC_TryUseObsidianFlesh()
+	If TimerDiff($HOC_ObsidianTimer) > 18500 Then
+		UseSkillEx($HOC_GlyphOfSwiftness)
+		UseSkillEx($HOC_ObsidianFlesh)
+	EndIf
+EndFunc
 
-	If IsRecharged($HOC_StoneFleshAura) And Not $HOC_IsBusy Then
-		$HOC_IsBusy = True
+;~ Uses Stone Flesh if its recharged
+Func HoC_TryUseStoneFlesh()
+	If TimerDiff($HOC_ObsidianTimer) > 18500 Then
 		UseSkillEx($HOC_ProtectiveSpirit)
 		UseSkillEx($HOC_StoneFleshAura)
-		$HOC_IsBusy = False
-		$HOC_StoneFleshTimer = TimerInit()
-		Sleep(100)
-		If $HOC_OF_Queue Then
-			HOC_ObsidianTimer()
-			$HOC_OF_Queue = False
-		EndIf
-		If $HOC_Kill_Queue Then
-			HOC_KillEnemies()
-			$HOC_Kill_Queue = False
-		EndIf
-	ElseIf $HOC_IsBusy Then 
-		$HOC_SF_Queue = True
 	EndIf
 EndFunc
 
 Func HOC_KillEnemies()
-	If Not $HOC_IsBusy Then
-		Local $nearestEnemy = GetNearestEnemyToAgent(GetMyAgent())
-		If $nearestEnemy <> 0 Then
-			UseSkillEx($HOC_RadiationField, $nearestEnemy)
-		Else
-			UseSkillEx($HOC_RadiationField)
-		EndIf
-		Sleep(250)
-		UseSkillEx($HOC_EbonBattleStandardOfHonor)
-		Sleep(1000)
-		UseSkillEx($HOC_SliverArmor)
-		Sleep(250)
-	ElseIf $HOC_IsBusy Then 
-		$HOC_Kill_Queue = True
+	Local $nearestEnemy = GetNearestEnemyToAgent(GetMyAgent())
+	If $nearestEnemy <> 0 Then
+		UseSkillEx($HOC_RadiationField, $nearestEnemy)
+	Else
+		UseSkillEx($HOC_RadiationField)
 	EndIf
+	UseSkillEx($HOC_EbonBattleStandardOfHonor)
+	UseSkillEx($HOC_SliverArmor)
 EndFunc
 
 Func Unregister_HOC_AllCycles()
 	Unregister_HOC_HealAndCureCycle()
-	Unregister_HOC_AggroCycle()
-
 EndFunc

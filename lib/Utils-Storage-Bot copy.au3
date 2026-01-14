@@ -620,7 +620,7 @@ EndFunc
 
 
 ;~ Sell general items to trader
-Func SellItemsToMerchant($dryRun = False)
+Func SellItemsToMerchant($dryRun = True)
 	; Centralized sell logic: all checks, filtering, and protections happen here
 	If GetMapID() <> $ID_Eye_of_the_North Then DistrictTravel($ID_Eye_of_the_North, $DISTRICT_NAME)
 	Info('Moving to merchant')
@@ -666,7 +666,7 @@ Func SellItemsToMerchant($dryRun = False)
 EndFunc
 
 ; Internal: Sell basic materials only (no GUI checks)
-Func SellMaterialsToMerchant_Internal($dryRun = False)
+Func SellMaterialsToMerchant_Internal($dryRun = True)
 	Local $materialMerchant = GetNearestNPCToCoords(-1850, 875)
 	UseCitySpeedBoost()
 	GoToNPC($materialMerchant)
@@ -701,7 +701,7 @@ Func SellMaterialsToMerchant_Internal($dryRun = False)
 EndFunc
 
 ; Internal: Sell rare materials only (no GUI checks)
-Func SellRareMaterialsToMerchant_Internal($dryRun = False)
+Func SellRareMaterialsToMerchant_Internal($dryRun = True)
 	Local $rareMaterialMerchant = GetNearestNPCToCoords(-2100, 1125)
 	UseCitySpeedBoost()
 	GoToNPC($rareMaterialMerchant)

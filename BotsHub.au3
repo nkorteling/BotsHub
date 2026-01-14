@@ -84,6 +84,7 @@
 #include 'src/Farm-VQ-Arborstone.au3'
 #include 'src/Farm-Skale.au3'
 #include 'src/Farm-Drakeflesh.au3'
+#include 'src/Farm-VaettirsMes.au3'
 
 #include 'lib/JSON.au3'
 #EndRegion Includes
@@ -127,7 +128,7 @@ Global $DISTRICT_NAME = 'Random'
 Global $BAGS_COUNT = 5
 Global $INVENTORY_SPACE_NEEDED = 5
 
-Global $AVAILABLE_FARMS = 'Boreal|Corsairs|Dragon Moss|Eden Iris|Feathers|Follow|FoW|Froggy|Gemstone|Gemstone Stygian|Jade Brotherhood|Kournans|Kurzick|Lightbringer|Lightbringer 2|Luxon|Mantids|Ministerial Commendations|Nexus Challenge|Norn|OmniFarm|Pongmei|Raptors|SoO|SpiritSlaves|Sunspear Armor|Tasca|Vaettirs|Vanguard|Voltaic|War Supply Keiran|Storage|Tests|TestSuite|Dynamic|Skree|Holdings Of Chokhin|Wingstorm|VQ Arborstone|Skale|Drakes'
+Global $AVAILABLE_FARMS = 'Boreal|Corsairs|Dragon Moss|Eden Iris|Feathers|Follow|FoW|Froggy|Gemstone|Gemstone Stygian|Jade Brotherhood|Kournans|Kurzick|Lightbringer|Lightbringer 2|Luxon|Mantids|Ministerial Commendations|Nexus Challenge|Norn|OmniFarm|Pongmei|Raptors|SoO|SpiritSlaves|Sunspear Armor|Tasca|Vaettirs|Vaettirs Mesmer|Vanguard|Voltaic|War Supply Keiran|Storage|Tests|TestSuite|Dynamic|Skree|Holdings Of Chokhin|Wingstorm|VQ Arborstone|Skale|Drakes'
 Global $AVAILABLE_DISTRICTS = '|Random|America|China|English|French|German|International|Italian|Japan|Korea|Polish|Russian|Spanish'
 
 ; Q9 Attribute Filter Arrays
@@ -999,6 +1000,9 @@ Func RunFarmLoop($Farm)
 		Case 'Vaettirs'
 			$INVENTORY_SPACE_NEEDED = 5
 			$result = VaettirFarm($STATUS)
+		Case 'Vaettirs Mesmer'
+			$INVENTORY_SPACE_NEEDED = 5
+			$result = MeV_VaettirsFarm($STATUS)
 		Case 'Vanguard'
 			$INVENTORY_SPACE_NEEDED = 5
 			$result = VanguardTitleFarm($STATUS)
@@ -1164,6 +1168,9 @@ Func UpdateFarmDescription($Farm)
 		Case 'Vaettirs'
 			GUICtrlSetData($GUI_Edit_CharacterBuild, $AMeVaettirsFarmerSkillbar)
 			GUICtrlSetData($GUI_Label_FarmInformations, $VaettirsFarmInformations)
+		Case 'Vaettirs Mesmer'
+			GUICtrlSetData($GUI_Edit_CharacterBuild, $MeAVaettirsFarmerSkillbar)
+			GUICtrlSetData($GUI_Label_FarmInformations, $MeVaettirsFarmInformations)
 		Case 'Vanguard'
 			GUICtrlSetData($GUI_Label_FarmInformations, $VanguardTitleFarmInformations)
 		Case 'Voltaic'

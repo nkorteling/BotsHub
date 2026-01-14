@@ -291,10 +291,11 @@ Global $STRUCT_MOD_OF_SWORDMANSHIP						= '14141824'
 #EndRegion of Mastery
 
 #Region caster weapons mods
-Global $STRUCT_MOD_HCT_20								= '00140828'
+Global $STRUCT_INSCRIPTION_ATTITUDE_NOT_APTITUDE		= '00140828'
 Global $STRUCT_MOD_HCT_10								= '000A0822'
 Global $STRUCT_MOD_HSR_20								= '00142828'
 Global $STRUCT_MOD_HSR_10								= '000AA823'
+Global $STRUCT_MOD_ADEPT_PREFIX							= 'A823A0'					;+1^20% casting speed
 #EndRegion caster weapons mods
 
 #Region staff mods
@@ -2093,7 +2094,7 @@ Func DefaultCreateValuableModsByOSWeaponTypeMap()
 		_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_30_HEALTH)
 	EndIf
 	If $data["Mods"]["Staff"]["Prefix - Head"]["Adept (Halves casting time of spells of item's attribute - Chance 20%)"] Then
-		_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_HCT_20)
+		_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_ADEPT_PREFIX)
 	EndIf
 	If $data["Mods"]["Staff"]["Prefix - Head"]["Swift (Halves casting time of spells - Chance 10%)"] Then
 		_ArrayAdd($Staff_Mods_Array, $STRUCT_MOD_HCT_10)
@@ -2240,7 +2241,7 @@ EndFunc
 Func DefaultCreateValuableModsByWeaponTypeMap()
 	; Nothing worth on shields - maybe could keep +45^ench handles ....
 	Local $Shield_Mods_Array	= []
-	Local $Offhand_Mods_Array	= [$STRUCT_INSCRIPTION_FORGET_ME_NOT, $STRUCT_MOD_HCT_20, $STRUCT_MOD_HSR_20]
+	Local $Offhand_Mods_Array	= [$STRUCT_INSCRIPTION_FORGET_ME_NOT, $STRUCT_INSCRIPTION_ATTITUDE_NOT_APTITUDE, $STRUCT_MOD_HSR_20]
 	Local $Wand_Mods_Array		= [ _
 		$STRUCT_INSCRIPTION_APTITUDE_NOT_ATTITUDE, _
 		$STRUCT_MOD_OF_THE_NECROMANCER _
