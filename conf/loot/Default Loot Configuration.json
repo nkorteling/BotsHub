@@ -717,7 +717,6 @@
 				}
 			},
 			"Green": {
-
 				"Axe": {
 					"Req 0": true,
 					"Req 1": true,
@@ -1292,7 +1291,7 @@
 					"To the pain (Damage +15% Armor -10 while attacking)": false,
 					"Brawn over brain (Damage +15% Energy -5)": false,
 					"Vengeance is mine (Damage +20% while Health is below 50%)": false,
-					"Dont fear the reaper (Damage +20% while Hexed)": false,
+					"Dont fear the reaper (Damage +20% while Hexed)": true,
 					"Dont think twice (Halves casting time of spells)": false
 				},
 				"Martial": {
@@ -1300,7 +1299,7 @@
 					"Let the memory live again (Halves skill recharge of spells)": false
 				},
 				"Spellcasting": {
-					"Hale and hearty (Energy +5 while Health is above 50%)": false,
+					"Hale and hearty (Energy +5 while Health is above 50%)": true,
 					"Have faith (Energy +5 while Enchanted)": false,
 					"Dont call it a come back (Energy +7 while Health is below 50%)": false,
 					"I am sorrow (Energy +7 while Hexed)": false,
@@ -1595,7 +1594,7 @@
 					"Of Enchanting (Enchantments last 20% longer)": false,
 					"Of The Warrior": false,
 					"Of The Ranger": false,
-					"Of The Necromancer": false,
+					"Of The Necromancer": true,
 					"Of The Mesmer": false,
 					"Of The Elementalist": false,
 					"Of The Monk": false,
@@ -1608,21 +1607,21 @@
 			},
 			"Staff": {
 				"Prefix - Head": {
-					"Hale (Health +30)": false,
-					"Adept (Halves casting time of spells of item's attribute - Chance 20%)": false,
+					"Hale (Health +30)": true,
+					"Adept (Halves casting time of spells of item's attribute - Chance 20%)": true,
 					"Swift (Halves casting time of spells - Chance 10%)": false,
 					"Insightful (Energy +5)": false,
 					"Defensive (Armor +5)": false
 				},
 				"Suffix - Wrapping": {
-					"of Fortitude (Health +30)": false,
+					"of Fortitude (Health +30)": true,
 					"Of Defense (Armor +5)": false,
 					"Of Shelter (Armor +7 vs physical damage)": false,
 					"Of Warding (Armor +7 vs elemental damage)": false,
 					"Of Enchanting (Enchantments last 20% longer)": false,
 					"Of The Warrior": false,
 					"Of The Ranger": false,
-					"Of The Necromancer": false,
+					"Of The Necromancer": true,
 					"Of The Mesmer": false,
 					"Of The Elementalist": false,
 					"Of The Monk": false,
@@ -1694,11 +1693,11 @@
 			},
 			"Wand": {
 				"Suffix - Wrapping": {
-					"Of Memory (Halves skill recharge of item's attribute spells - Chance 20%)": false,
+					"Of Memory (Halves skill recharge of item's attribute spells - Chance 20%)": true,
 					"Of Quickening (Halves skill recharge of spells - Chance 10%)": false,
 					"Of The Warrior": false,
 					"Of The Ranger": false,
-					"Of The Necromancer": false,
+					"Of The Necromancer": true,
 					"Of The Mesmer": false,
 					"Of The Elementalist": false,
 					"Of The Monk": false,
@@ -2436,7 +2435,7 @@
 			"Bolt of Damask": false,
 			"Bolt of Silk": false,
 			"Glob of Ectoplasm": false,
-			"Steel Ingot": true,
+			"Steel Ingot": false,
 			"Deldrimor Steel Ingot": false,
 			"Monstrous Claw": false,
 			"Monstrous Eye": false,
@@ -2458,7 +2457,7 @@
 			"Jadeite Shard": false
 		},
 		"Trophies": {
-			"Glacial Stone": true,
+			"Glacial Stone": false,
 			"Destroyer Core": false,
 			"Stolen Goods": true,
 			"Other trophies": false
@@ -3106,7 +3105,7 @@
 					"Req 5": true,
 					"Req 6": true,
 					"Req 7": true,
-					"Req 8": true,
+					"Req 8": false,
 					"Req 9": true,
 					"Req 10": true,
 					"Req 11": true,
@@ -3154,7 +3153,7 @@
 					"Req 5": true,
 					"Req 6": true,
 					"Req 7": true,
-					"Req 8": true,
+					"Req 8": false,
 					"Req 9": true,
 					"Req 10": true,
 					"Req 11": true,
@@ -3958,7 +3957,6 @@
 				}
 			},
 			"Green": {
-
 				"Axe": {
 					"Req 0": true,
 					"Req 1": true,
