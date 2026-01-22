@@ -79,6 +79,12 @@
 #include 'src/vanquishes/Luxon.au3'
 #include 'src/vanquishes/Norn.au3'
 #include 'src/vanquishes/Vanguard.au3'
+#include 'src/farms/Skree.au3'
+#include 'src/farms/Skale.au3'
+#include 'src/farms/Drakeflesh.au3'
+#include 'src/farms/HoldingsOfChokhin.au3' 
+#include 'src/utilities/Mapping.au3'
+#include 'src/farms/Kappa.au3'
 #EndRegion Includes
 
 #Region Variables
@@ -91,7 +97,7 @@ Global Const $FAIL = 1
 Global Const $PAUSE = 2
 Global Const $STUCK = 3
 
-Global Const $AVAILABLE_FARMS = '|Asuran|Boreal|Corsairs|Dragon Moss|Eden Iris|Feathers|Follower|FoW|FoW Tower of Courage|Froggy|Gemstones|Gemstone Margonite|Gemstone Stygian|Gemstone Torment|Glint Challenge|Jade Brotherhood|Kournans|Kurzick|Lightbringer|LDOA|Lightbringer 2|Luxon|Mantids|Ministerial Commendations|Minotaurs|Nexus Challenge|Norn|OmniFarm|Pongmei|Raptors|SoO|SpiritSlaves|Sunspear Armor|Tasca|Underworld|Vaettirs|Vanguard|Voltaic|War Supply Keiran|Storage|Tests|TestSuite|Dynamic execution'
+Global Const $AVAILABLE_FARMS = '|Asuran|Boreal|Corsairs|Dragon Moss|Eden Iris|Feathers|Follower|FoW|FoW Tower of Courage|Froggy|Gemstones|Gemstone Margonite|Gemstone Stygian|Gemstone Torment|Glint Challenge|Jade Brotherhood|Kappa|Kournans|Kurzick|Lightbringer|LDOA|Lightbringer 2|Luxon|Mantids|Ministerial Commendations|Minotaurs|Nexus Challenge|Norn|OmniFarm|Pongmei|Raptors|SoO|SpiritSlaves|Sunspear Armor|Tasca|Underworld|Vaettirs|Vanguard|Voltaic|War Supply Keiran|Storage|Tests|TestSuite|Dynamic execution|Skree|Skale Fins|Drakes On A Plain|Holdings Of Chokhin|Mapping Utility'
 Global Const $AVAILABLE_DISTRICTS = '|Random|America|China|English|French|German|International|Italian|Japan|Korea|Polish|Russian|Spanish'
 Global Const $AVAILABLE_BAG_COUNTS = '|1|2|3|4|5'
 Global Const $AVAILABLE_WEAPON_SLOTS = '|1|2|3|4'
@@ -351,6 +357,18 @@ Func RunFarmLoop($Farm)
 		Case 'War Supply Keiran'
 			$inventory_space_needed = 10
 			$result = WarSupplyKeiranFarm()
+		Case 'Skale Fins'
+			$inventory_space_needed = 10
+			$result = SkaleFinFarm()	
+		Case 'Drakes On A Plain'
+			$inventory_space_needed = 10
+			$result = DrakefleshFarm()
+		Case 'Skree'
+			$inventory_space_needed = 10
+			$result = SkreeFarm()
+		Case 'Holdings Of Chokhin'
+			$inventory_space_needed = 5
+			$result = HoC_Farm()
 		Case 'Storage'
 			$inventory_space_needed = 5
 			ResetBotsSetups()
@@ -362,6 +380,11 @@ Func RunFarmLoop($Farm)
 			$result = RunTests()
 		Case 'TestSuite'
 			$result = RunTestSuite()
+		Case 'Mapping Utility'
+			$result = RunMappingUtil()
+		Case 'Kappa'
+			$inventory_space_needed = 5
+			$result = KappaFarm()
 		Case Else
 			MsgBox(0, 'Error', 'This farm does not exist.')
 	EndSwitch

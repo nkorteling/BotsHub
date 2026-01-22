@@ -856,7 +856,11 @@ Func GetIsBoss($agent)
 EndFunc
 #EndRegion AgentInfo
 
-
+;~ Get nearest foe that is a boss - Null if no boss
+Func GetNearestBossFoe()
+	Local $bossFoes = GetFoesInRangeOfAgent(GetMyAgent(), $RANGE_COMPASS, GetIsBoss)
+	Return IsArray($bossFoes) And UBound($bossFoes) > 0 ? $bossFoes[0] : Null
+EndFunc
 
 ; FIXME: change format of this function to build it with MapFromArrays or MapFromDoubleArray
 ;~ Create a map containing foes and their priority level

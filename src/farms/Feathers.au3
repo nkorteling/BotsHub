@@ -226,7 +226,9 @@ Func Kill($waitForSettle = True)
 	ChangeWeaponSet(1)
 	If IsRecharged($FEATHERS_VOW_OF_STRENGTH) Then UseSkillEx($FEATHERS_VOW_OF_STRENGTH)
 	If GetEnergy() >= 10 Then
+		Sleep(1000)
 		UseSkillEx($FEATHERS_STAGGERING_FORCE)
+		Sleep(100)
 		UseSkillEx($FEATHERS_EREMITES_ATTACK, $target)
 	EndIf
 	ChangeWeaponSet(1)

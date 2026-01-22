@@ -100,7 +100,7 @@ Func InventoryManagementMidRun($tradeTown = $ID_EYE_OF_THE_NORTH)
 	If GUICtrlRead($GUI_Checkbox_FarmMaterialsMidRun) <> $GUI_CHECKED Then Return False
 	; Operations order :
 	; 1-Check if we have at least 1 identification kit and 1 salvage kit
-	; 2-If not, buy until we have 4 identification kits and 12 salvaged kits
+	; 2-If not, buy until we have 2 identification kits and 6 salvaged kits
 	; 3-Sort items
 	; 4-Identify items
 	; 5-Salvage
@@ -980,8 +980,8 @@ EndFunc
 ;~ Buy kits for mid run salvage to preserve inventory space during run
 Func BuyKitsForMidRun()
 	; constants to determine how many kits should be in player's inventory
-	Local Static $requiredSalvageKitUses = 300				; = 12 salvage kits with 25 uses,
-	Local Static $requiredIdentificationKitUses = 400		; = 4 superior identification kits with 100 uses
+	Local Static $requiredSalvageKitUses = 150				; = 6 salvage kits with 25 uses,
+	Local Static $requiredIdentificationKitUses = 200		; = 2 superior identification kits with 100 uses
 
 	Local $salvageUses = CountRemainingKitUses($ID_SALVAGE_KIT)
 	Local $salvageKitsRequired = KitsRequired($requiredSalvageKitUses - $salvageUses, $ID_SALVAGE_KIT)
@@ -2347,7 +2347,7 @@ Global Const $SCHEMA_LOOKUP_UPGRADES = ['OS', 'upgrade_type', 'weapon', 'effect'
 
 ;~ Connect to the database storing information about items
 Func ConnectToDatabase()
-	_SQLite_Startup()
+	_SQLite_Startup(@ScriptDir & "\sqlite3.dll", False, 1)
 	If @error Then Exit MsgBox(16, 'SQLite Error', 'Failed to start SQLite')
 	FileChangeDir(@ScriptDir)
 	$sqlite_db = _SQLite_Open('data\items_database.db3')

@@ -19,9 +19,9 @@
 #RequireAdmin
 #NoTrayIcon
 
-#include '../lib/GWA2.au3'
-#include '../lib/GWA2_ID.au3'
-#include '../lib/Utils.au3'
+#include '../../lib/GWA2.au3'
+#include '../../lib/GWA2_ID.au3'
+#include '../../lib/Utils.au3'
 
 ; Possible improvements :
 
@@ -101,11 +101,9 @@ Global Const $SF_Winter				= 2
 Global $SF_FARM_SETUP = False
 
 ;~ Main method to farm Skree
-Func SkreeFarm($STATUS)
+Func SkreeFarm()
 	; Need to be done here in case bot comes back from inventory management
-	If Not $SF_FARM_SETUP Then SetupSkreeFarm()
-	If $STATUS <> 'RUNNING' Then Return $PAUSE
-
+	If Not $SF_FARM_SETUP And SetupSkreeFarm() == $FAIL Then Return $PAUSE
 	GoToForumHighlands()
 	Local $result = SkreeFarmLoop()
 	ReturnBackToOutpost($ID_Tihark_Orchard)
@@ -244,6 +242,8 @@ Func CastFullSpiritsAndBuffs()
 	Sleep(1000)
 	UseHeroSkill($Hero_SF_GeneralMorgahn, $SF_StandYourGround, GetMyAgent())
 	UseHeroSkill($Hero_SF_GeneralMorgahn, $SF_CantTouchThis, GetMyAgent())
+	DisableHeroSkillSlot($ID_General_Morgahn, $SF_FallBack)
+	DisableHeroSkillSlot($ID_General_Morgahn, $SF_Incoming)
 EndFunc
 
 
@@ -256,6 +256,8 @@ Func SkreeFarmLoop()
 		GetSkreeSunspearBlessing()
 
 		;~ Move to spirit Location
+		EnableHeroSkillSlot($ID_General_Morgahn, $SF_Incoming)
+		EnableHeroSkillSlot($ID_General_Morgahn, $SF_FallBack)
 		MoveTo(-4603, 10089)
 		MoveTo(-7070, 5623)
 		MoveTo(-7654, 5308)
@@ -292,7 +294,7 @@ Func SkreeFarmLoop()
 		MoveAggroingSkreeFarm(-9975, 5229)
 		MoveAggroingSkreeFarm(-9520, 5558)
 		MoveAggroingSkreeFarm(-9044, 5442)
-
+		
 		;~ Find Target Foe
 		Local $boss = GetNearestBossFoe()
 		If $boss <> Null Then
@@ -310,6 +312,7 @@ Func SkreeFarmLoop()
 		UseSkillEx($SF_DeathsCharge, $boss)
 
 		Sleep(1000)
+		If GetEffectTimeRemaining($SF_WhirlingDefense) <= 0 Then UseSkillEx($SF_WhirlingDefense)
 
 		Local $farmTimer = TimerInit()
 
@@ -319,14 +322,16 @@ Func SkreeFarmLoop()
 				Move(DllStructGetData($nearestEnemy, 'X'), DllStructGetData($nearestEnemy, 'Y'), 0)
 			EndIf
 			RandomSleep(100)
+			If GetEffectTimeRemaining($SF_WhirlingDefense) <= 0 Then UseSkillEx($SF_WhirlingDefense)
 		WEnd
 
 		Info('Looting')
 		
 		; Move to distant items and pick them up
 		Local $lootTimer = TimerInit()
-		While TimerDiff($lootTimer) < 30000  ; 30 second timeout
+		While TimerDiff($lootTimer) < 10000  ; 10 second timeout, Increase during event
 			PickUpItems()
+			If GetEffectTimeRemaining($SF_WhirlingDefense) <= 0 Then UseSkillEx($SF_WhirlingDefense)
 			
 			Local $item = GetNearestItemToAgent(GetMyAgent())
 			If $item = 0 Then ExitLoop
@@ -380,7 +385,7 @@ Func SF_IsBodyBlocked()
 
 	Local $me = GetMyAgent()
 	If DllStructGetData($me, 'HP') < 0.90 Then
-		SF_SendStuckCommand()
+		CheckAndSendStuckCommand()
 	EndIf
 
 	While Not IsPlayerMoving()
@@ -391,7 +396,7 @@ Func SF_IsBodyBlocked()
 		EndIf
 
 		If ($blocked > 4 Or DllStructGetData($me, 'HP') < 0.90) Then
-			SF_SendStuckCommand()
+			CheckAndSendStuckCommand()
 		EndIf
 
 		If $blocked > 7 Then
@@ -402,20 +407,6 @@ Func SF_IsBodyBlocked()
 		RandomSleep(250)
 		$me = GetMyAgent()
 	WEnd
-	Return False
-EndFunc
-
-
-;~ Send /stuck - don't overuse
-Func SF_SendStuckCommand()
-	; use a timer to avoid spamming /stuck - /stuck is only useful when rubberbanding - there shouldn't be any enemy around the character then
-	If CountFoesInRangeOfAgent(GetMyAgent(), $RANGE_NEARBY) == 0 And TimerDiff($chatStuckTimer) > 10000 Then
-		Warn('Sending /stuck')
-		SendChat('stuck', '/')
-		$chatStuckTimer = TimerInit()
-		RandomSleep(GetPing() + 20)
-		Return True
-	EndIf
 	Return False
 EndFunc
 

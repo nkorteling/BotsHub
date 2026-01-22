@@ -225,9 +225,13 @@ Func VanquishDaladaUplands()
 
 	If MoveAggroAndKillGroups($foes, 85, 93) == $FAIL Then Return $FAIL
 
+	Sleep(3000)
+
+	If MoveAggroAndKillGroups($foes, 93, 93) == $FAIL Then Return $FAIL
+
 	If Not GetAreaVanquished() Then
 		Error('The map has not been completely vanquished.')
-		Return $FAIL
+		;~ Return $FAIL
 	Else
 		Info('Map has been fully vanquished.')
 		Return $SUCCESS

@@ -19,9 +19,9 @@
 #RequireAdmin
 #NoTrayIcon
 
-#include '../lib/GWA2.au3'
-#include '../lib/GWA2_ID.au3'
-#include '../lib/Utils.au3'
+#include '../../lib/GWA2.au3'
+#include '../../lib/GWA2_ID.au3'
+#include '../../lib/Utils.au3'
 
 ; Possible improvements : rewrite it all
 
@@ -44,21 +44,20 @@ Global Const $SKALEFIN_FARM_DURATION = (8 * 60 + 20) * 1000
 ; Skill numbers declared to make the code WAY more readable (UseSkillEx($SkaleFin_SandShards) is better than UseSkillEx(1))
 Global Const $SkaleFin_SandShards			= 1
 Global Const $SkaleFin_VowOfStrength		= 2
-Global Const $SkaleFin_StaggeringForce	= 3
+Global Const $SkaleFin_StaggeringForce		= 3
 Global Const $SkaleFin_EremitesAttack		= 4
-Global Const $SkaleFin_Dash				= 5
-Global Const $SkaleFin_DwarvenStability	= 6
+Global Const $SkaleFin_Dash					= 5
+Global Const $SkaleFin_DwarvenStability		= 6
 Global Const $SkaleFin_Conviction			= 7
 Global Const $SkaleFin_MysticRegeneration	= 8
 
 Global $SKALEFIN_FARM_SETUP = False
+Global $SkaleFinWaitForSettle = True
 
 ;~ Main method to farm feathers
-Func SkaleFinFarm($STATUS)
+Func SkaleFinFarm()
 	; Need to be done here in case bot comes back from inventory management
 	If Not $SKALEFIN_FARM_SETUP Then SetupSkaleFinFarm()
-	If $STATUS <> 'RUNNING' Then Return $PAUSE
-
 	GoToFahranur()
 	Local $result = SkaleFinFarmLoop()
 	ReturnBackToOutpost($ID_Jokanur_Diggings)
@@ -73,17 +72,10 @@ Func SetupSkaleFinFarm()
 	SwitchMode($ID_NORMAL_MODE)
 	LeaveParty() ; solo farmer
 	LoadSkillTemplate($DASkaleFinFarmerSkillbar)
-
-	Info('Entering Jaya Bluffs')
-	Local $me = GetMyAgent()
-
-	If GetDistanceToPoint($me, 17300, 17300) > 5000 Then MoveTo(17000, 12400)
-	If GetDistanceToPoint($me, 17300, 17300) > 4400 Then MoveTo(19000, 13450)
-	If GetDistanceToPoint($me, 17300, 17300) > 1800 Then MoveTo(18750, 16000)
-
 	GoToFahranur()
-	Move(10500, -13100)
-	Move(10970, -13360)
+	Info('Rezoning to Jokanur Diggings')
+	MoveTo(20120, 10885)
+	MoveTo(20450, 9041)
 	RandomSleep(1000)
 	WaitMapLoading($ID_Jokanur_Diggings, 10000, 2000)
 	$SKALEFIN_FARM_SETUP = True
@@ -91,219 +83,103 @@ Func SetupSkaleFinFarm()
 EndFunc
 
 
-;~ Move out of outpost into Jaya Bluffs
+;~ Move out of outpost into Fahranur Explorable
 Func GoToFahranur()
 	If GetMapID() <> $ID_Jokanur_Diggings Then TravelToOutpost($ID_Jokanur_Diggings, $DISTRICT_NAME)
-	While GetMapID() <> $ID_Jaya_Bluffs
-		Info('Moving to Jaya Bluffs')
-		MoveTo(602, 35)
-		MoveTo(-1231, -840)
-		Move(-2673, -1121)
+	While GetMapID() <> $ID_FAHRANUR_THE_FIRST_CITY
+		Info('Moving to Fahranur Explorable')
+		MoveTo(-2376, -947)
+		MoveTo(-2743, -989)
 		RandomSleep(1000)
-		WaitMapLoading($MAP_ID_Fahranur, 10000, 2000)
+		WaitMapLoading($ID_FAHRANUR_THE_FIRST_CITY, 10000, 2000)
 	WEnd
 EndFunc
 
 
 ;~ Farm loop
 Func SkaleFinFarmLoop()
-	If GetMapID() <> $ID_Jaya_Bluffs Then Return $FAIL
-
-	Info('Running to Sensali.')
-	UseConsumable($ID_Birthday_Cupcake)
-	SkaleFinFarmMoveKill(17621, 12247, True)
-	SkaleFinFarmMoveKill(14613, 13509, True)
-	SkaleFinFarmMoveKill(11422, 14537, True)
-	SkaleFinFarmMoveKill(9843, 19001, True)
-	SkaleFinFarmMoveKill(5668, 16847, True)
-	SkaleFinFarmMoveKill(908, 15963, True)
-	SkaleFinFarmMoveKill(1332, 14021, True)
-	SkaleFinFarmMoveKill(2178, 14202, True)
+	If GetMapID() <> $ID_FAHRANUR_THE_FIRST_CITY Then Return $FAIL
+	Info('Starting Skale Fin farming loop')
+	SkaleFinFarmMoveRun(17522, 11991, $RANGE_AREA * 2)
+	SkaleFinFarmMoveRun(14610, 13432, $RANGE_AREA * 2)
+	SkaleFinFarmMoveRun(11529, 13852, $RANGE_AREA * 2)
+	SkaleFinFarmMoveRun(10767, 17429, $RANGE_AREA * 2)
+	SkaleFinFarmMoveRun(9855, 18895, $RANGE_AREA * 2)
+	SkaleFinFarmMoveRun(7534, 18408, $RANGE_AREA * 2)
+	SkaleFinFarmMoveRun(5504, 17058, $RANGE_AREA * 2)
+	SkaleFinFarmMoveRun(1221, 16584, $RANGE_AREA * 2)
+	SkaleFinFarmMoveRun(966, 15887, $RANGE_AREA * 2)
+	SkaleFinFarmMoveRun(833, 14083, $RANGE_AREA * 2)
+	SkaleFinFarmMoveRun(2620, 14282, $RANGE_AREA * 2)
+	Info('Finished Skale Fin farming loop')
 	If IsPlayerDead() Then Return $FAIL
 	Return $SUCCESS
 EndFunc
 
-
 ;~ Move and ... run ? Who the fuck wrote this ?
-Func SkaleFinFarmMoveRun($x, $y, $timeOut = 2*60*1000)
+Func SkaleFinFarmMoveRun($x, $y, $KillRange)
 	If IsPlayerDead() Then Return False
 	Local $me = GetMyAgent()
-	Local $deadlock = TimerInit()
 
 	Move($x, $y)
 	While IsPlayerAlive() And GetDistanceToPoint($me, $x, $y) > 250
-		If TimerDiff($deadlock) > $timeOut Then
-			Resign()
-			Sleep(3000)
-			$deadlock = TimerInit()
-			While IsPlayerAlive() And TimerDiff($deadlock) < 30000
-				Sleep(3000)
-				If TimerDiff($deadlock) > 15000 Then Resign()
-			WEnd
-		EndIf
 		If IsRecharged($SkaleFin_DwarvenStability) Then UseSkillEx($SkaleFin_DwarvenStability)
 		If IsRecharged($SkaleFin_Dash) Then UseSkillEx($SkaleFin_Dash)
 		$me = GetMyAgent()
-		If DllStructGetData($me, 'HP') < 0.95 And GetEffectTimeRemaining($ID_Mystic_Regeneration) <= 0 Then UseSkillEx($SkaleFin_MysticRegeneration)
+		If DllStructGetData($me, 'HealthPercent') < 0.5 And GetEffectTimeRemaining($ID_Mystic_Regeneration) <= 0 Then UseSkillEx($SkaleFin_MysticRegeneration)
 		If Not IsPlayerMoving() Then Move($x, $y)
 		RandomSleep(250)
 		$me = GetMyAgent()
+
+		If CountFoesInRangeOfAgent($me, 1200) > 1 Then
+			Sleep(2000)
+			SkaleFinStartKilling($KillRange)
+		EndIf
 	WEnd
 	Return True
 EndFunc
 
-
-;~ Move and kill I suppose
-Func SkaleFinFarmMoveKill($x, $y, $SkaleFinwaitForSettle = True, $timeout = 5*60*1000)
-	If IsPlayerDead() Then Return $FAIL
-	Local $Angle = 0
-	Local $stuckCount = 0
-	Local $Blocked = 0
-	Local $deadlock = TimerInit()
-
-	Move($x, $y)
-	Local $me = GetMyAgent()
-	; TODO: fix this mess
-	While GetDistanceToPoint($me, $x, $y) > 250
-		If TimerDiff($deadlock) > $timeout Then
-			Resign()
-			Sleep(3000)
-			$deadlock = TimerInit()
-			While IsPlayerAlive() And TimerDiff($deadlock) < 30000
-				Sleep(3000)
-				If TimerDiff($deadlock) > 15000 Then Resign()
-			WEnd
-			If IsPlayerDead() Then Return $FAIL
-		EndIf
-		If IsPlayerDead() Then Return $FAIL
-		If IsRecharged($SkaleFin_DwarvenStability) Then UseSkillEx($SkaleFin_DwarvenStability)
-		If IsRecharged($SkaleFin_Dash) Then UseSkillEx($SkaleFin_Dash)
-		$me = GetMyAgent()
-		If DllStructGetData($me, 'HP') < 0.9 Then
-			If GetEffectTimeRemaining($ID_Mystic_Regeneration) <= 0 Then UseSkillEx($SkaleFin_MysticRegeneration)
-			If GetEffectTimeRemaining($ID_Conviction) <= 0 Then UseSkillEx($SkaleFin_Conviction)
-		EndIf
-		$me = GetMyAgent()
-		If CountFoesInRangeOfAgent($me, 1200, IsSensali) > 1 Then
-			Sleep(2000)
-			SkaleFinKill($SkaleFinwaitForSettle)
-		EndIf
-		$me = GetMyAgent()
-		If Not IsPlayerMoving() Then
-			$Blocked += 1
-			If $Blocked <= 5 Then
-				Move($x, $y)
-			Else
-				$me = GetMyAgent()
-				$Angle += 40
-				Move(DllStructGetData($me, 'X')+300*sin($Angle), DllStructGetData($me, 'Y') + 300*cos($Angle))
-				Sleep(2000)
-				Move($x, $y)
-			EndIf
-		EndIf
-		$stuckCount += 1
-		If $stuckCount > 25 Then
-			$stuckCount = 0
-			SendChat('stuck', '/')
-			RandomSleep(50)
-		EndIf
-		RandomSleep(250)
-		$me = GetMyAgent()
-	WEnd
-	Return $SUCCESS
+Func PickupAllItemsExceptBoots($item)
+	Local $name = DllStructGetData($item, 'ID')
+	Info('Item Name: ' & $name)
+	Return True
 EndFunc
 
+Func SkaleFinStartKilling($KillRange = 900)
+	Local $me = GetMyAgent()
+	Local $target
 
-;~ Kill foes
-Func SkaleFinKill($SkaleFinwaitForSettle = True)
-	If IsPlayerDead() Then Return $FAIL
+	Info('Starting to kill foes')
 
-	Local $deadlock, $timeout = 2*60*1000
+	If DllStructGetData($me, 'HealthPercent') < 0.50  Then UseSkillEx($SkaleFin_MysticRegeneration)
+	
+	Sleep(2000)
 
-	Local $stuckCount = 0
-	SendChat('stuck', '/')
-	RandomSleep(50)
-	If GetEffectTimeRemaining($ID_Sand_Shards) <= 0 Then UseSkillEx($SkaleFin_SandShards)
-	If $SkaleFinwaitForSettle Then
-		If Not SkaleFinWaitForSettle() Then Return $FAIL
-	EndIf
-	SendChat('stuck', '/')
-	RandomSleep(50)
 	Local $target = GetNearestEnemyToAgent(GetMyAgent())
-	ChangeWeaponSet(1)
 	If IsRecharged($SkaleFin_VowOfStrength) Then UseSkillEx($SkaleFin_VowOfStrength)
+		Sleep(500)
 	If GetEnergy() >= 10 Then
+		$target = GetNearestEnemyToAgent($me)
 		UseSkillEx($SkaleFin_StaggeringForce)
+		Sleep(100)
 		UseSkillEx($SkaleFin_EremitesAttack, $target)
+		Sleep(500)
 	EndIf
-	ChangeWeaponSet(1)
 
-	$deadlock = TimerInit()
-
-	While CountFoesInRangeOfAgent(GetMyAgent(), 900, IsSensali) > 0
-		If TimerDiff($deadlock) > $timeout Then
-			Resign()
-			Sleep(3000)
-			$deadlock = TimerInit()
-			While IsPlayerAlive() And TimerDiff($deadlock) < 30000
-				Sleep(3000)
-				If TimerDiff($deadlock) > 15000 Then Resign()
-			WEnd
-			If IsPlayerDead() Then Return $FAIL
-		EndIf
+	While CountFoesInRangeOfAgent($me, $KillRange) > 0
 		If IsPlayerDead() Then Return $FAIL
-		$target = GetNearestEnemyToAgent(GetMyAgent())
-		If GetEffectTimeRemaining($ID_Mystic_Regeneration) <= 0 Then UseSkillEx($SkaleFin_MysticRegeneration)
-		If GetEffectTimeRemaining($ID_Conviction) <= 0 Then UseSkillEx($SkaleFin_Conviction)
-		If GetEffectTimeRemaining($ID_Sand_Shards) <= 0 And CountFoesInRangeOfAgent(GetMyAgent(), 300) > 1 Then UseSkillEx($SkaleFin_SandShards)
-		If IsRecharged($SkaleFin_VowOfStrength) <= 0 Then UseSkillEx($SkaleFin_VowOfStrength)
-		$stuckCount += 1
-		If $stuckCount > 100 Then
-			$stuckCount = 0
-			SendChat('stuck', '/')
-			RandomSleep(50)
-		EndIf
-
+			;~ If GetEffectTimeRemaining($ID_Mystic_Regeneration) <= 0 Then UseSkillEx($SkaleFin_MysticRegeneration)
+			;~ If GetEffectTimeRemaining($ID_Conviction) <= 0 Then UseSkillEx($SkaleFin_Conviction)
+			If GetEffectTimeRemaining($ID_Sand_Shards) <= 0 And CountFoesInRangeOfAgent($me, 300) > 1 Then UseSkillEx($SkaleFin_SandShards)
+				If IsRecharged($SkaleFin_VowOfStrength) <= 0 Then UseSkillEx($SkaleFin_VowOfStrength)
+	
 		Sleep(250)
+		$target = GetNearestEnemyToAgent($me)
 		Attack($target)
+		$me = GetMyAgent()
 	WEnd
 	RandomSleep(500)
 	Info('Looting')
 	PickUpItems()
-	FindAndOpenChests()
-	ChangeWeaponSet(2)
-	Return $SUCCESS
-EndFunc
-
-
-;~ Wait for foes to settle, I guess ?
-Func SkaleFinWaitForSettle($Timeout = 10000)
-	Local $me = GetMyAgent()
-	Local $target
-	Local $deadlock = TimerInit()
-	While IsPlayerAlive() And CountFoesInRangeOfAgent(-2,900) == 0 And (TimerDiff($deadlock) < 5000)
-		If IsPlayerDead() Then Return False
-		If DllStructGetData($me, 'HP') < 0.7 Then Return True
-		If GetEffectTimeRemaining($ID_Mystic_Regeneration) <= 0 Then UseSkillEx($SkaleFin_MysticRegeneration)
-		If GetEffectTimeRemaining($ID_Conviction) <= 0 Then UseSkillEx($SkaleFin_Conviction)
-		If GetEffectTimeRemaining($ID_Sand_Shards) <= 0 Then UseSkillEx($SkaleFin_SandShards)
-		Sleep(250)
-		$me = GetMyAgent()
-		$target = GetFurthestNPCInRangeOfCoords(3, DllStructGetData($me, 'X'), DllStructGetData($me, 'Y'), $RANGE_EARSHOT)
-	WEnd
-
-	If CountFoesInRangeOfAgent($me, 900) == 0 Then Return False
-
-	$deadlock = TimerInit()
-	While (GetDistance($me, $target) > $RANGE_NEARBY) And (TimerDiff($deadlock) < $Timeout)
-		If IsPlayerDead() Then Return False
-		If DllStructGetData($me, 'HP') < 0.7 Then Return True
-		If GetEffectTimeRemaining($ID_Mystic_Regeneration) <= 0 Then UseSkillEx($SkaleFin_MysticRegeneration)
-		If GetEffectTimeRemaining($ID_Conviction) <= 0 Then UseSkillEx($SkaleFin_Conviction)
-		If GetEffectTimeRemaining($ID_Sand_Shards) <= 0 Then UseSkillEx($SkaleFin_SandShards)
-		Sleep(250)
-		$me = GetMyAgent()
-		$target = GetFurthestNPCInRangeOfCoords(3, DllStructGetData($me, 'X'), DllStructGetData($me, 'Y'), $RANGE_EARSHOT)
-	WEnd
-	Return True
+	Sleep(GetPing())
 EndFunc
